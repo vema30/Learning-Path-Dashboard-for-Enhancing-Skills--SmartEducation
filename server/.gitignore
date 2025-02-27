@@ -1,0 +1,53 @@
+# Ignore node_modules and dependencies
+node_modules/
+bower_components/
+
+# Ignore environment files
+.env
+.env.local
+
+# Ignore logs and debugging files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore build files
+dist/
+build/
+out/
+
+# Ignore IDE and editor-specific files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+
+# Ignore compiled files
+*.o
+*.out
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore dependencies lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore coverage reports
+coverage/
+
+# Ignore miscellaneous files
+*.log
+*.bak
+*.tmp
+
+# Ignore specific file
+progress.text
