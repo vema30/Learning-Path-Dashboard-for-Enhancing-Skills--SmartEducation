@@ -6,17 +6,8 @@ require("dotenv").config();
 const Schema = mongoose.Schema;
 
 const OtpSchema = new Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: false // Optional, can be linked to a user
-  },
-  email: {
-    type: String,
-    required: true, // Now required since we are sending an email
-    trim: true,
-    lowercase: true
-  },
+  
+  
   otp: {
     type: String,
     required: true
