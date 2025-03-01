@@ -1,8 +1,8 @@
 //import model
 //Todo i need to write  createTag and showAllTags 
 
-const Tag = require("../models/Tag");
-const createTag = async (req, res) => {
+const Category = require("../models/Category");
+const  createCategory = async (req, res) => {
     try{
         const { name, description } = req.body;
         if(!name || !description ){
@@ -27,13 +27,13 @@ const createTag = async (req, res) => {
     }
 };
 
-const showAllTags = async (req, res) => {
+const showAllCategory = async (req, res) => {
     try{
-        const tags = await Tag.find({}, { name: true, description: true });
+        const category = await Category.find({}, { name: true, description: true });
         return res.status(200).json({
             success: true,
             message: "All tags fenched successfully",
-            tags,
+            category,
         });
     }
     catch(e)
@@ -45,5 +45,5 @@ const showAllTags = async (req, res) => {
     }
 }
 module.exports={
-    createTag,showAllTags
+    createCategory,showAllCategory
 }

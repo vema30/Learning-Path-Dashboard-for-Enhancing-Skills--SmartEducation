@@ -1,13 +1,13 @@
 require("dotenv").config();
 const Course= require("../models/Course");
 
-const Tag = require("../models/Tag");
+const Category = require("../models/Category");
 const User = require("../models/User");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 
 const createCourse = async (req, res) => {  
     try {
-        const { courseName, courseDescription, whatYouWillLearn, tag, price } = req.body;
+        const { courseName, courseDescription, whatYouWillLearn, Category, price } = req.body;
         const thumbnail = req.files.thumnailImage;
 
         if (!courseName || !courseDescription || !whatYouWillLearn || !tag || !price || !thumbnail) {
@@ -43,11 +43,11 @@ const createCourse = async (req, res) => {
             price,
             thumbnail: thumbnailImage.secure_url,
             instructor: instructorDetails._id,
-            tag: tag
+            Category: Category
         });
 
         // Update the tag to include the new course
-        await Tag.findByIdAndUpdate(tagDetails._id, {
+        await Category.findByIdAndUpdate(tagDetails._id, {
             $push: {
                 courses: course._id
             }
