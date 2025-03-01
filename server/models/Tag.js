@@ -12,7 +12,7 @@ const TagSchema = new Schema({
     required: true,
     trim: true
   },
-  courses: [{ // Changed from single ObjectId to an array
+  courses: [{ // Changed from single ObjectId to an array initial i used onlt object but i need array of object to store multiple courses
     type: mongoose.Schema.Types.ObjectId,
     ref: "Course"
   }]
