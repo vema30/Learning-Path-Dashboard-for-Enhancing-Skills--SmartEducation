@@ -19,5 +19,5 @@ const CategorySchema = new Schema({
 }, { timestamps: true }); // Adds createdAt and updatedAt
 
 // Compile model from schema
-const Tag = mongoose.model("Category", CategorySchema);
-module.exports = Tag;
+const Category = mongoose.model("Category", CategorySchema);
+module.exports = Category;

@@ -1,16 +1,17 @@
 const User = require("../models/User");
+
 const mailSender = require("../utils/mailSender");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-
+console.log("hey its user model ",User);
 // Generate Password Reset Token
 const resetPasswordToken = async (req, res) => {
     try {
         const { email } = req.body;
-
+       
         // Check if the user exists
         const user = await User.findOne({ email: email });
-        if (!user) {
+        if (!user) {    
             return res.status(400).json({
                 success: false,
                 message: "User does not exist",
