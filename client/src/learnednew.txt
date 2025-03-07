@@ -1,0 +1,35 @@
+What is w-fit in Tailwind CSS?
+w-fit is a Tailwind CSS utility that sets the width of an element to match its content (fit-content).
+
+transition-all → Applies smooth transition to all properties (e.g., background color, width, opacity, etc.).
+duration-200 → Sets the transition speed to 200ms.
+
+
+When to Use mx-auto?
+✅ When centering block-level elements (e.g., div, button).
+✅ When creating responsive layouts.
+✅ When aligning content in a flexbox/grid parent.
+
+What is mx-auto in Tailwind CSS?
+mx-auto is a Tailwind CSS utility that centers an element horizontally by setting margin-left and margin-right to auto.
+
+How It Works
+mx → Stands for margin-x (left & right).
+auto → Automatically adjusts margins to center the element inside its parent.
+
+
+Why Use w-screen min-h-screen?
+✅ Ensures the element takes up the entire screen width & height.
+✅ Useful for fullscreen layouts, modals, or background sections.
+✅ Works well with flex to center content.
+
+What is group-hover in Tailwind CSS?
+group-hover is a Tailwind CSS variant that allows child elements to change their styles when their parent is hovered.
+How It Works
+Add group to the parent element.
+Use group-hover: on child elements to change their styles when the parent is hovered.
+
+
+What Does max-content Do?
+max-content means the element will expand to fit the longest unbreakable content inside it.
+It prevents wrapping and ensures the element is only as wide as necessary.
