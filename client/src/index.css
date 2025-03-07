@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.home-bg {
+    background-image: url('./assets/Images/bghome.svg');
+    background-size: cover;
+    background-position: center;
+}
+
+html,body{
+    overflow-x: hidden;
+}
+
