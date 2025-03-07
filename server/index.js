@@ -7,7 +7,7 @@ const profileRoutes = require("./routes/Profile");
 
 const paymentRoutes = require("./routes/Payments");
 const courseRoutes = require("./routes/Course");
-//const contactUsRoute = require("./routes/Contact");
+const contactUsRoute = require("./routes/Contact");
 const dataBaseConnection = require("./config/database");
 const cookieParser = require("cookie-parser");
 
@@ -25,6 +25,8 @@ dataBaseConnection();
 app.use(express.json());
 app.use(cookieParser());
  app.use(cors());
+
+ //middleware for cors
 app.use(
 	cors({
 	  origin: "http://localhost:3000",
@@ -34,7 +36,7 @@ app.use(
 	})
   );
   
-
+//middleware for fileuplading
 app.use(
 	fileUpload({
 		useTempFiles:true,
@@ -49,8 +51,8 @@ cloudinaryConnect();
  app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/profile", profileRoutes);
  app.use("/api/v1/course", courseRoutes);
-app.use("/api/v1/payment", paymentRoutes);
-// //app.use("/api/v1/reach", contactUsRoute);
+ console.log("heu")
+app.use("/api/v1/payment", paymentRoutes);app.use("/api/v1/reach", contactUsRoute);
 
 //def route
 
