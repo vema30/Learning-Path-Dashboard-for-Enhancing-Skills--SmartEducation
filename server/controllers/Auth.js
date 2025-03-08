@@ -87,7 +87,7 @@ const signUp = async (req, res) => {
         const { email, password, confirmPassword, firstName, lastName, accountType, contactNumber, otp } = req.body;
 
         // ✅ Check if all required fields are provided
-        if (!email || !password || !confirmPassword || !firstName || !lastName || !accountType || !contactNumber || !otp) {
+        if (!email || !password || !confirmPassword || !firstName || !lastName || !accountType || !contactNumber ) {
             return res.status(403).json({ success: false, message: "All fields are required" });
         }
 
@@ -103,16 +103,16 @@ const signUp = async (req, res) => {
         }
 
         // ✅ Get Latest OTP
-        const latestOtp = await Otp.findOne({ email }).sort({ createdAt: -1 });
+     //   const latestOtp = await Otp.findOne({ email }).sort({ createdAt: -1 });
 
-        if (!latestOtp || latestOtp.otp !== otp) {
-            return res.status(400).json({ success: false, message: "Invalid OTP" });
-        }
+        // if (!latestOtp || latestOtp.otp !== otp) {
+        //     return res.status(400).json({ success: false, message: "Invalid OTP" });
+        // }
 
-        // ✅ Check OTP Expiry
-        if (Date.now() - latestOtp.createdAt.getTime() > 5 * 60 * 1000) {
-            return res.status(400).json({ success: false, message: "OTP expired, please request a new one" });
-        }
+        // // ✅ Check OTP Expiry
+        // if (Date.now() - latestOtp.createdAt.getTime() > 5 * 60 * 1000) {
+        //     return res.status(400).json({ success: false, message: "OTP expired, please request a new one" });
+        // }
 
         // ✅ Hash Password & Create Profile in Parallel
         const [hashedPassword, profileDetails] = await Promise.all([

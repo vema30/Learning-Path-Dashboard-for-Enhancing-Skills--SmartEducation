@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const ProfileSchema = new Schema({
   gender: {
     type: String,
-    enum: ["Male", "Female", "Other", "Prefer not to say"],
+    //enum: ["Male", "Female", "Other", "Prefer not to say"],
   },
   dateOfBirth: {
     type: String, // Changed from String to Date
