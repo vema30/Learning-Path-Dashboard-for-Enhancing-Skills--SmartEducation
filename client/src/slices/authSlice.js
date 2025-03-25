@@ -1,35 +1,34 @@
 import { createSlice } from "@reduxjs/toolkit";
+
 const getTokenFromLocalStorage = () => {
   try {
     const token = localStorage.getItem("token");
-    if (token) {
-      return JSON.parse(token); // Parse the token if it exists
-    }
+    return token ? JSON.parse(token) : null;
   } catch (error) {
     console.error("Failed to parse token from localStorage:", error);
+    return null;
   }
-  return null; // Fallback to null if parsing fails or token doesn't exist
 };
-
 
 const initialState = {
   signupData: null,
   loading: false,
-   token: getTokenFromLocalStorage(), 
+  token: getTokenFromLocalStorage(),
 };
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: initialState,
+  initialState,
   reducers: {
-    setSignupData(state, value) {
-      state.signupData = value.payload;
+    setSignupData(state, action) {
+      state.signupData = action.payload;
     },
-    setLoading(state, value) {
-      state.loading = value.payload;
+    setLoading(state, action) {
+      state.loading = action.payload;
     },
-    setToken(state, value) {
-      state.token = value.payload;
+    setToken(state, action) {
+      state.token = action.payload;
+      localStorage.setItem("token", JSON.stringify(action.payload)); // Persist token on state update
     },
   },
 });

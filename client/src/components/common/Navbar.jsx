@@ -10,16 +10,20 @@ import { apiConnector } from "../../services/apiconnector";
 import { categories } from "../../services/apis";
 import { ACCOUNT_TYPE } from "../../utils/constants";
 import ProfileDropdown from "../core/Auth/ProfileDropDown";
-
+ 
 export function Navbar() {
   const { token } = useSelector((state) => state.auth);
+ // console.log("token",token );
   const { user } = useSelector((state) => state.profile);
   const { totalItems } = useSelector((state) => state.cart);
   const location = useLocation();
-
+  useEffect(() => {
+    console.log("Token inside Navbar:", token);
+  }, [token]);
+  
   const [subLinks, setSubLinks] = useState([]);
   const [loading, setLoading] = useState(false);
-
+      console.log("sublinks",subLinks);
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -38,7 +42,7 @@ export function Navbar() {
   const matchRoute = (route) => {
     return matchPath({ path: route }, location.pathname);
   };
-
+  console.log("token",token );
   return (
     <div
       className={`flex h-14 items-center justify-center border-b-[1px] border-b-richblack-700 ${
@@ -72,23 +76,24 @@ export function Navbar() {
                           <p className="text-center">Loading...</p>
                         ) : subLinks && subLinks.length > 0 ? (
                           <>
-                            {subLinks
-                              .filter((subLink) => subLink?.courses?.length > 0)
-                              .map((subLink, i) => (
-                                <Link
-                                  to={`/catalog/${subLink.name
-                                    .split(" ")
-                                    .join("-")
-                                    .toLowerCase()}`}
-                                  className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50"
-                                  key={i}
-                                >
-                                  <p className="text-black">{subLink.name}</p>
-                                </Link>
-                              ))}
+                           
+{subLinks && subLinks.length > 0 ? (
+  subLinks.map((subLink, i) => (
+    <Link
+      to={`/catalog/${subLink.name.split(" ").join("-").toLowerCase()}`}
+      className="text-black rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50"
+      key={i}
+    >
+      <p className="text-black">{subLink.name}</p>
+    </Link>
+  ))
+) : (
+  <p className="text-center text-black">No Courses Found</p>
+)}
+
                           </>
                         ) : (
-                          <p className="text-center">No Courses Found</p>
+                          <p className="text-center text-black">No Courses aFound</p>
                         )}
                       </div>
                     </div>
@@ -145,3 +150,4 @@ export function Navbar() {
     </div>
   );
 }
+

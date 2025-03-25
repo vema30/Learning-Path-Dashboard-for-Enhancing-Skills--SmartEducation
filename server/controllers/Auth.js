@@ -147,6 +147,7 @@ const signUp = async (req, res) => {
 };
 
 // Login
+// Login
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -164,13 +165,35 @@ const login = async (req, res) => {
             return res.status(401).json({ success: false, message: "Invalid password" });
         }
 
-        const token = jsonwebtoken.sign({ id: user._id, email: user.email, role: user.accountType }, process.env.JWT_SECRET, { expiresIn: "2d" });
+        const token = jsonwebtoken.sign(
+            { id: user._id, email: user.email, role: user.accountType },
+            process.env.JWT_SECRET,
+            { expiresIn: "2d" }
+        );
+
         user.password = undefined;
-        res.cookie("token", token, { expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), httpOnly: true }).status(200).json({ success: true, message: "User logged in successfully", user });
+
+        // Setting the token in the cookie
+        res.cookie("token", token, {
+            expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+            httpOnly: true,
+        });
+
+        // Responding with success and token
+        return res.status(200).json({
+            success: true,
+            message: "User logged in successfully",
+            user,
+            token,
+        });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message || "User cannot be logged in, please try again" });
+        return res.status(500).json({
+            success: false,
+            message: error.message || "User cannot be logged in, please try again",
+        });
     }
 };
+
 
 // Change Password
 const changePassword = async (req, res) => {
