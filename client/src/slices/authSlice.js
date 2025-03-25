@@ -1,62 +1,39 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-
-// Async thunk for logging in
-export const loginUser = createAsyncThunk(
-  "auth/loginUser",
-  async ({ email, password }, { rejectWithValue }) => {
-    try {
-      const response = await axios.post("http://localhost:4000/api/v1/auth/login", {
-        email,
-        password,
-      });
-
-      return response.data.token; // Assuming API returns { token: "your_jwt_token" }
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Login failed");
+import { createSlice } from "@reduxjs/toolkit";
+const getTokenFromLocalStorage = () => {
+  try {
+    const token = localStorage.getItem("token");
+    if (token) {
+      return JSON.parse(token); // Parse the token if it exists
     }
+  } catch (error) {
+    console.error("Failed to parse token from localStorage:", error);
   }
-);
-
-// Initial state
-const initialState = {
-  token: localStorage.getItem("token") ? JSON.parse(localStorage.getItem("token")) : null,
-  loading: false,
-  error: null,
+  return null; // Fallback to null if parsing fails or token doesn't exist
 };
 
-// Create auth slice
+
+const initialState = {
+  signupData: null,
+  loading: false,
+   token: getTokenFromLocalStorage(), 
+};
+
 const authSlice = createSlice({
   name: "auth",
-  initialState,
+  initialState: initialState,
   reducers: {
-    setToken(state, action) {
-      state.token = action.payload;
-      localStorage.setItem("token", JSON.stringify(action.payload));
+    setSignupData(state, value) {
+      state.signupData = value.payload;
     },
-    clearToken(state) {
-      state.token = null;
-      localStorage.removeItem("token");
+    setLoading(state, value) {
+      state.loading = value.payload;
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.token = action.payload;
-        localStorage.setItem("token", JSON.stringify(action.payload));
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+    setToken(state, value) {
+      state.token = value.payload;
+    },
   },
 });
 
-// Export actions & reducer
-export const { setToken, clearToken } = authSlice.actions;
+export const { setSignupData, setLoading, setToken } = authSlice.actions;
+
 export default authSlice.reducer;

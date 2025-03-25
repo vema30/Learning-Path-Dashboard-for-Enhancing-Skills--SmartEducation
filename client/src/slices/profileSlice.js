@@ -1,29 +1,22 @@
-import { createSlice } from "@reduxjs/toolkit";
+import {createSlice} from "@reduxjs/toolkit"
 
-// Initial state for authentication
 const initialState = {
-    user:null,
+    user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null,
+    loading: false,
+};
 
-
-}
-
-// Create the authentication slice
 const profileSlice = createSlice({
-  name: "profile", // Unique name for the slice
-  initialState, // Initial state for authentication
-  reducers: {
-    // Action to set the token in state and local storage
-    setUser(state, action) {
-      state.token = action.payload;
-    
-    }
-    
-
-  }
+    name:"profile",
+    initialState: initialState,
+    reducers: {
+        setUser(state, value) {
+            state.user = value.payload;
+        },
+        setLoading(state, value) {
+            state.loading = value.payload;
+          },
+    },
 });
 
-// Export actions to use them in components
-export const { setToken, clearToken } = profileSlice.actions;
-
-// Export reducer to be used in the Redux store
+export const {setUser, setLoading} = profileSlice.actions;
 export default profileSlice.reducer;

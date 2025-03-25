@@ -25,7 +25,7 @@ const userSchema = new Schema({
        accountType:{
         type:String,
         required:true,
-        enum:['Admin','User','Instructor'],
+        enum:['Admin','User','Instructor','Student'],
        },
        additonalDetails:{
               type: mongoose.Schema.Types.ObjectId,
@@ -38,7 +38,7 @@ const userSchema = new Schema({
        }],
        image:{
         type:String,
-        required:true
+        //required:true
        },
        token:{
               type:String,

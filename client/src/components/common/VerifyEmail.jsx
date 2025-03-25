@@ -1,74 +1,110 @@
-import React, { useState, useRef } from 'react';
-import CTButton from './CTButton';
-import { FaArrowLeft } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import OtpInput from "react-otp-input";
+import { Link } from "react-router-dom";
+import { BiArrowBack } from "react-icons/bi";
+import { RxCountdownTimer } from "react-icons/rx";
+import { useDispatch, useSelector } from "react-redux";
+import { sendOtp, signUp } from "../../services/operations/authAPI";
+import { useNavigate } from "react-router-dom";
 
-const VerifyEmail = () => {
-  const [code, setCode] = useState(new Array(6).fill(""));
-  const inputRefs = useRef([]);
+function VerifyEmail() {
+  const [otp, setOtp] = useState("");
+  const { signupData, loading } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const handleChange = (e, index) => {
-    const value = e.target.value;
-    if (!/^\d?$/.test(value)) return; // Only allow numbers
-
-    const newCode = [...code];
-    newCode[index] = value;
-    setCode(newCode);
-
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
+  useEffect(() => {
+    // Only allow access of this route when user has filled the signup form
+    if (!signupData) {
+      navigate("/signup");
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !code[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
+  const handleVerifyAndSignup = (e) => {
+    e.preventDefault();
+    const {
+      accountType,
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+    } = signupData;
+
+    dispatch(
+      signUp(
+        accountType,
+        firstName,
+        lastName,
+        email,
+        password,
+        confirmPassword,
+        otp,
+        navigate
+      )
+    );
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-bold">Verify Your Email</h1>
-        <p className="text-gray-600">
-          We’ve sent a verification email to <strong>your@email.com</strong>.  
-          Please check your inbox and enter the verification code below.
-        </p>
-      </div>
-
-      {/* 6-digit input fields */}
-      <div className="flex space-x-2 mt-4 text-black">
-        {code.map((digit, index) => (
-          <input
-            key={index}
-            ref={(el) => (inputRefs.current[index] = el)}
-            type="text"
-            maxLength="1"
-            value={digit}
-            onChange={(e) => handleChange(e, index)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            className="w-12 h-12 text-center text-xl font-bold border rounded-md focus:outline-blue-500"
-          />
-        ))}
-      </div>
-
-      <div className="mt-4">
-        <CTButton active={true}>verify and register</CTButton>
-      </div>
-      <div className='flex justify-center m-4'>
-        <CTButton linkto="/login">
-          <div className='flex flex-row justify-center items-center space-x-2'>
-            <FaArrowLeft />
-            <span>Back to Login</span>
-          </div>
-        </CTButton>
+    <div className="min-h-[calc(100vh-3.5rem)] grid place-items-center">
+      {loading ? (
+        <div>
+          <div className="spinner"></div>
         </div>
-
-
-      <div className="mt-6 text-gray-500">
-        <p>Didn't receive an email? Check your spam folder.</p>
-      </div>
+      ) : (
+        <div className="max-w-[500px] p-4 lg:p-8">
+          <h1 className="text-richblack-5 font-semibold text-[1.875rem] leading-[2.375rem]">
+            Verify Email
+          </h1>
+          <p className="text-[1.125rem] leading-[1.625rem] my-4 text-richblack-100">
+            A verification code has been sent to you. Enter the code below
+          </p>
+          <form onSubmit={handleVerifyAndSignup}>
+            <OtpInput
+              value={otp}
+              onChange={setOtp}
+              numInputs={6}
+              renderInput={(props) => (
+                <input
+                  {...props}
+                  placeholder="-"
+                  style={{
+                    boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
+                  }}
+                  className="w-[48px] lg:w-[60px] border-0 bg-richblack-800 rounded-[0.5rem] text-richblack-5 aspect-square text-center focus:border-0 focus:outline-2 focus:outline-yellow-50"
+                />
+              )}
+              containerStyle={{
+                justifyContent: "space-between",
+                gap: "0 6px",
+              }}
+            />
+            <button
+              type="submit"
+              className="w-full bg-yellow-50 py-[12px] px-[12px] rounded-[8px] mt-6 font-medium text-richblack-900"
+            >
+              Verify Email
+            </button>
+          </form>
+          <div className="mt-6 flex items-center justify-between">
+            <Link to="/signup">
+              <p className="text-richblack-5 flex items-center gap-x-2">
+                <BiArrowBack /> Back To Signup
+              </p>
+            </Link>
+            <button
+              className="flex items-center text-blue-100 gap-x-2"
+              onClick={() => dispatch(sendOtp(signupData.email))}
+            >
+              <RxCountdownTimer />
+              Resend it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+}
 
 export default VerifyEmail;

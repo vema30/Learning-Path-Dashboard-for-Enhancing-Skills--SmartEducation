@@ -1,96 +1,147 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { NavbarLinks } from '../../data/navbar-links';
+import { useEffect, useState } from "react";
+import { AiOutlineMenu, AiOutlineShoppingCart } from "react-icons/ai";
+import { BsChevronDown } from "react-icons/bs";
+import { useSelector } from "react-redux";
+import { Link, matchPath, useLocation } from "react-router-dom";
 
-export const Navbar = () => {
-  const [categories, setCategories] = useState([]);
-  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+import logo from "../../assets/Logo/Logo-Full-Light.png";
+import { NavbarLinks } from "../../data/navbar-links";
+import { apiConnector } from "../../services/apiconnector";
+import { categories } from "../../services/apis";
+import { ACCOUNT_TYPE } from "../../utils/constants";
+import ProfileDropdown from "../core/Auth/ProfileDropDown";
+
+export function Navbar() {
+  const { token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.profile);
+  const { totalItems } = useSelector((state) => state.cart);
+  const location = useLocation();
+
+  const [subLinks, setSubLinks] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    (async () => {
+      setLoading(true);
       try {
-        const response = await fetch('http://localhost:4000/api/v1/course/categories');
-        const result = await response.json();
-        if (result.success) {
-          setCategories(result.data);
-        }
+        const res = await apiConnector("GET", categories.CATEGORIES_API);
+        console.log("API Response:", res);
+        setSubLinks(res.data.data);
+        console.log("subLinks:", res.data.data); // Log the subLinks data
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.log("Could not fetch Categories.", error);
       }
-    };
-
-    fetchCategories();
+      setLoading(false);
+    })();
   }, []);
 
+  const matchRoute = (route) => {
+    return matchPath({ path: route }, location.pathname);
+  };
+
   return (
-    <div className="w-11/12 max-w-maxContent mx-auto py-4">
-      <div className="flex items-center">
-        
-        {/* Logo / Branding */}
-        <Link to="/" className="text-2xl font-bold text-yellow-500 tracking-wide">
-          StudySphere
-        </Link>
-
-        {/* Centered Navbar Links */}
-        <div className="flex-1 flex justify-center gap-6 text-lg font-semibold">
-          {NavbarLinks.map((nav, index) => (
-            nav.title === "Catalog" ? (
-              <div 
-                key={index} 
-                className="relative"
-                onMouseEnter={() => setIsCatalogOpen(true)}
-                onMouseLeave={() => setIsCatalogOpen(false)}
-              >
-                <button className="text-richblack-200 hover:text-white transition-all duration-200">
-                  Catalog ▼
-                </button>
-                {isCatalogOpen && (
-                  <div className="absolute left-0 mt-2 w-48 bg-richblack-900 shadow-lg rounded-md z-10">
-                    {categories.length > 0 ? (
-                      categories.map((category) => (
-                        <Link 
-                          key={category._id} 
-                          to={`/catalog/${category._id}`} 
-                          className="block px-4 py-2 text-richblack-200 hover:bg-richblack-800 transition-all duration-200"
-                        >
-                          {category.name}
-                        </Link>
-                      ))
-                    ) : (
-                      <div className="px-4 py-2 text-richblack-400">Loading...</div>
-                    )}
-                  </div>
+    <div
+      className={`flex h-14 items-center justify-center border-b-[1px] border-b-richblack-700 ${
+        location.pathname !== "/" ? "bg-richblack-800" : ""
+      } transition-all duration-200`}
+    >
+      <div className="flex w-11/12 max-w-maxContent items-center justify-between">
+        {/* Logo */}
+        {/* <Link to="/">
+          <img src={logo} alt="Logo" width={160} height={32} loading="lazy" />
+        </Link> */}
+        {/* Navigation links */}
+        <nav className="hidden md:block">
+          <ul className="flex gap-x-6  text-black">
+            {NavbarLinks.map((link, index) => (
+              <li key={index}>
+                {link.title === "Catalog" ? (
+                  <>
+                    <div
+                      className={`group relative flex cursor-pointer items-center gap-1 ${
+                        matchRoute("/catalog/:catalogName")
+                          ? "text-yellow-25"
+                          : "text-richblack-25"
+                      }`}
+                    >
+                      <p>{link.title}</p>
+                      <BsChevronDown />
+                      <div className="invisible absolute left-[50%] top-[50%] z-[1000] flex w-[200px] translate-x-[-50%] translate-y-[3em] flex-col rounded-lg bg-richblack-5 p-4 text-richblack-900 opacity-0 transition-all duration-150 group-hover:visible group-hover:translate-y-[1.65em] group-hover:opacity-100 lg:w-[300px]">
+                        <div className="absolute left-[50%] top-0 -z-10 h-6 w-6 translate-x-[80%] translate-y-[-40%] rotate-45 select-none rounded bg-richblack-5 text-black"></div>
+                        {loading ? (
+                          <p className="text-center">Loading...</p>
+                        ) : subLinks && subLinks.length > 0 ? (
+                          <>
+                            {subLinks
+                              .filter((subLink) => subLink?.courses?.length > 0)
+                              .map((subLink, i) => (
+                                <Link
+                                  to={`/catalog/${subLink.name
+                                    .split(" ")
+                                    .join("-")
+                                    .toLowerCase()}`}
+                                  className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50"
+                                  key={i}
+                                >
+                                  <p className="text-black">{subLink.name}</p>
+                                </Link>
+                              ))}
+                          </>
+                        ) : (
+                          <p className="text-center">No Courses Found</p>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <Link to={link?.path}>
+                    <p
+                      className={`${
+                        matchRoute(link?.path)
+                          ? "text-yellow-25"
+                          : "text-richblack-25"
+                      }`}
+                    >
+                      {link.title}
+                    </p>
+                  </Link>
                 )}
-              </div>
-            ) : (
-              <Link 
-                key={index} 
-                to={nav.path || "#"} 
-                className="text-richblack-200 hover:text-white transition-all duration-200"
-              >
-                {nav.title}
-              </Link>
-            )
-          ))}
+              </li>
+            ))}
+          </ul>
+        </nav>
+        {/* Login / Signup / Dashboard */}
+        <div className="hidden items-center gap-x-4 md:flex">
+          {user && user?.accountType !== ACCOUNT_TYPE.INSTRUCTOR && (
+            <Link to="/dashboard/cart" className="relative">
+              <AiOutlineShoppingCart className="text-2xl text-richblack-100" />
+              {totalItems > 0 && (
+                <span className="absolute -bottom-2 -right-2 grid h-5 w-5 place-items-center overflow-hidden rounded-full bg-richblack-600 text-center text-xs font-bold text-yellow-100">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+          )}
+          {token === null && (
+            <Link to="/login">
+              <button className="rounded-[8px] border border-richblack-700 bg-richblack-800 px-[12px] py-[8px] text-richblack-100">
+                Log in
+              </button>
+            </Link>
+          )}
+          {token === null && (
+            <Link to="/signup">
+              <button className="rounded-[8px] border border-richblack-700 bg-richblack-800 px-[12px] py-[8px] text-richblack-100">
+                Sign up
+              </button>
+            </Link>
+          )}
+          {token !== null && <ProfileDropdown />}
         </div>
-
-        {/* Login & Signup Buttons (Kept at Right) */}
-        <div className="flex gap-4 ml-auto">
-          <Link 
-            to="/login" 
-            className="px-4 py-2 border border-richblack-200 text-richblack-200 rounded-md hover:bg-richblack-800 transition-all duration-200"
-          >
-            Login
-          </Link>
-          <Link 
-            to="/signup" 
-            className="px-4 py-2 bg-yellow-500 text-black rounded-md hover:bg-yellow-600 transition-all duration-200"
-          >
-            Signup
-          </Link>
-        </div>
-        
+        <button className="mr-4 md:hidden">
+          <AiOutlineMenu fontSize={24} fill="#AFB2BF" />
+        </button>
       </div>
     </div>
   );
-};
+}

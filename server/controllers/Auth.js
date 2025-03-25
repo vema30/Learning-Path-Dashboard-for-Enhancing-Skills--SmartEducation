@@ -31,7 +31,7 @@ const sendOTP = async (req, res) => {
             existingOtp = await Otp.findOne({ otp });
             console.log(otp);
         } while (existingOtp);
-      
+         console.log(otp,"otp");
        try{
         await Otp.create({ email, otp, createdAt: Date.now() });
        }
@@ -84,10 +84,10 @@ const sendOTP = async (req, res) => {
 // Sign Up
 const signUp = async (req, res) => {
     try {
-        const { email, password, confirmPassword, firstName, lastName, accountType, contactNumber, otp } = req.body;
+        const { email, password, confirmPassword, firstName, lastName, accountType, otp } = req.body;
 
         // ✅ Check if all required fields are provided
-        if (!email || !password || !confirmPassword || !firstName || !lastName || !accountType || !contactNumber ) {
+        if (!email || !password || !confirmPassword || !firstName || !lastName || !accountType ||!otp ) {
             return res.status(403).json({ success: false, message: "All fields are required" });
         }
 
@@ -121,7 +121,7 @@ const signUp = async (req, res) => {
                 gender: "",
                 dateOfBirth: "",
                 about: "",
-                contactNumber: contactNumber, // ✅ Keep contactNumber, since it's provided
+                contactNumber: "", // ✅ Keep contactNumber, since it's provided
             })
         ]);
 
@@ -132,7 +132,7 @@ const signUp = async (req, res) => {
             firstName,
             lastName,
             accountType,
-            contactNumber,
+            
             additionalDetails: profileDetails._id,
             image: `https://api.dicebear.com/5.x/initials/svg?seed=${encodeURIComponent(firstName + " " + lastName)}`
         });
