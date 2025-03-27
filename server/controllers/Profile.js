@@ -1,61 +1,76 @@
 const Profile = require("../models/Profile")
 const CourseProgress = require("../models/CourseProgress")
-
+const moment = require("moment");
 const Course = require("../models/Course")
 const User = require("../models/User")
 const { uploadImageToCloudinary } = require("../utils/imageUploader")
 const mongoose = require("mongoose")
 const { convertSecondsToDuration } = require("../utils/secToDuration")
-// Method for updating a profile
+
 exports.updateProfile = async (req, res) => {
+  console.log("req.user",req.body);
   try {
-    const {
-      firstName = "",
-      lastName = "",
-      dateOfBirth = "",
-      about = "",
-      contactNumber = "",
-      gender = "",
-    } = req.body
-    const id = req.user.id
+    // Check if req.user exists
+    console.log("req.user",req.body);
+    if (!req.user) {
+      console.log("req.user is undefined");
+      return res.status(401).json({ success: false, message: "Unauthorized access" });
+    }
+     
+    const userId = req.user.id;
+    const { firstName, lastName, dateOfBirth, about, contactNumber, gender } = req.body;
 
-    // Find the profile by id
-    const userDetails = await User.findById(id)
-    const profile = await Profile.findById(userDetails.additionalDetails)
+    console.log("User ID from token:", userId);
 
-    const user = await User.findByIdAndUpdate(id, {
-      firstName,
-      lastName,
-    })
-    await user.save()
+    // Find user and associated profile additionalDetails
+    const user = await User.findById(userId).populate("additionalDetails");
 
-    // Update the profile fields
-    profile.dateOfBirth = dateOfBirth
-    profile.about = about
-    profile.contactNumber = contactNumber
-    profile.gender = gender
+    if (!user) {
+      console.log("User not found for ID:", userId);
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
-    // Save the updated profile
-    await profile.save()
+    let profile = user.additionalDetails;
 
-    // Find the updated user details
-    const updatedUserDetails = await User.findById(id)
-      .populate("additionalDetails")
-      .exec()
+    // If profile doesn't exist, create one
+    if (!profile) {
+      profile = await Profile.create({
+        gender: "",
+        dateOfBirth: "",
+        about: "",
+        contactNumber: ""
+      });
+      user.additionalDetails = profile._id;
+      await user.save();
+    }
+
+    // Update user and profile details
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+
+    await user.save();
+
+    if (dateOfBirth) profile.dateOfBirth = new Date(dateOfBirth);
+    if (about) profile.about = about;
+    if (contactNumber) profile.contactNumber = contactNumber;
+    if (gender) profile.gender = gender;
+
+    await profile.save();
+
+    // Fetch updated user details
+    const updatedUserDetails = await User.findById(userId).populate("additionalDetails");
 
     return res.json({
       success: true,
       message: "Profile updated successfully",
       updatedUserDetails,
-    })
+    });
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    })
+    console.error("Error updating profile:", error.message);
+    return res.status(500).json({ success: false, message: "Error updating profile" });
   }
-}
+};
+
 
 exports.deleteAccount = async (req, res) => {
   try {

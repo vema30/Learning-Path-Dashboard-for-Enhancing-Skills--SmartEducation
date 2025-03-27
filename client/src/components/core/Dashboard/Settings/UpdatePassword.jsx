@@ -13,15 +13,20 @@ export default function UpdatePassword() {
 
   const [showOldPassword, setShowOldPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm()
 
+  // Watch new password to validate confirm password match
+  const newPassword = watch("newPassword")
+
   const submitPasswordForm = async (data) => {
-    // console.log("password Data - ", data)
+    console.log("password Data - ", data)
     try {
       await changePassword(token, data)
     } catch (error) {
@@ -91,6 +96,38 @@ export default function UpdatePassword() {
                 </span>
               )}
             </div>
+            <div className="relative flex flex-col gap-2 lg:w-[48%]">
+              <label htmlFor="confirmPassword" className="lable-style">
+                Confirm New Password
+              </label>
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                id="confirmPassword"
+                placeholder="Confirm New Password"
+                className="form-style"
+                {...register("confirmPassword", {
+                  required: true,
+                  validate: (value) =>
+                    value === newPassword || "Passwords do not match",
+                })}
+              />
+              <span
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute right-3 top-[38px] z-[10] cursor-pointer"
+              >
+                {showConfirmPassword ? (
+                  <AiOutlineEyeInvisible fontSize={24} fill="#AFB2BF" />
+                ) : (
+                  <AiOutlineEye fontSize={24} fill="#AFB2BF" />
+                )}
+              </span>
+              {errors.confirmPassword && (
+                <span className="-mt-1 text-[12px] text-yellow-100">
+                  {errors.confirmPassword.message || "Please confirm your password."}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex justify-end gap-2">
@@ -102,7 +139,7 @@ export default function UpdatePassword() {
           >
             Cancel
           </button>
-          <IconBtn type="submit" text="Update" />
+          <IconBtn type="submit" text="Update" onClick={handleSubmit(submitPasswordForm)} />
         </div>
       </form>
     </>

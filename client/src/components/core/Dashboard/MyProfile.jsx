@@ -1,20 +1,28 @@
 import { RiEditBoxLine } from "react-icons/ri";
 import { useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
-
+import { Link } from "react-router-dom";
 import { formattedDate } from "../../../utils/dateFormatter";
-import IconBtn from "../../common/IconBtn";
 
 export default function MyProfile() {
-  const { user } = useSelector((state) => state.profile);
-  const navigate = useNavigate();
+  const { user, loading, error } = useSelector((state) => state.profile);
+
+  // Loading and error handling
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  if (!user) {
+    return <div>No user data found.</div>;
+  }
 
   return (
-    <Link >
     <div>
-    <h1 className="mb-14 text-3xl font-medium text-richblack-5">
-        My Profile
-      </h1>
+      <h1 className="mb-14 text-3xl font-medium text-richblack-5">My Profile</h1>
+
       {/* Profile Section */}
       <div className="flex items-center justify-between rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-8 px-12">
         <div className="flex items-center gap-x-4">
@@ -30,28 +38,26 @@ export default function MyProfile() {
             <p className="text-sm text-richblack-300">{user?.email}</p>
           </div>
         </div>
-        <IconBtn
-          text="Edit"
-          onclick={() => {
-            navigate("/dashboard/settings");
-          }}
+        <Link
+          to="/dashboard/settings"
+          className={`flex items-center bg-yellow-50 cursor-pointer gap-x-2 rounded-md py-2 px-5 font-semibold text-richblack-900`}
         >
-          <RiEditBoxLine />
-        </IconBtn>
+          <span className="text-richblack-900">Edit</span>
+          <RiEditBoxLine className="text-richblack-900" />
+        </Link>
       </div>
 
       {/* About Section */}
       <div className="my-10 flex flex-col gap-y-10 rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-8 px-12">
         <div className="flex w-full items-center justify-between">
           <p className="text-lg font-semibold text-richblack-5">About</p>
-          <IconBtn
-            text="Edit"
-            onclick={() => {
-              navigate("/dashboard/settings");
-            }}
+          <Link
+            to="/dashboard/settings"
+            className={`flex items-center bg-yellow-50 cursor-pointer gap-x-2 rounded-md py-2 px-5 font-semibold text-richblack-900`}
           >
-            <RiEditBoxLine />
-          </IconBtn>
+            <span className="text-richblack-900">Edit</span>
+            <RiEditBoxLine className="text-richblack-900" />
+          </Link>
         </div>
         <p
           className={`${
@@ -67,32 +73,25 @@ export default function MyProfile() {
       {/* Personal Details Section */}
       <div className="my-10 flex flex-col gap-y-10 rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-8 px-12">
         <div className="flex w-full items-center justify-between">
-          <p className="text-lg font-semibold text-richblack-5">
-            Personal Details
-          </p>
-          <IconBtn
-            text="Edit"
-            onclick={() => {
-              navigate("/dashboard/settings");
-            }}
+          <p className="text-lg font-semibold text-richblack-5">Personal Details</p>
+          <Link
+            to="/dashboard/settings"
+            className={`flex items-center bg-yellow-50 cursor-pointer gap-x-2 rounded-md py-2 px-5 font-semibold text-richblack-900`}
           >
-            <RiEditBoxLine />
-          </IconBtn>
+            <span className="text-richblack-900">Edit</span>
+            <RiEditBoxLine className="text-richblack-900" />
+          </Link>
         </div>
         <div className="flex max-w-[500px] justify-between">
           {/* Left Column */}
           <div className="flex flex-col gap-y-5">
             <div>
               <p className="mb-2 text-sm text-richblack-600">First Name</p>
-              <p className="text-sm font-medium text-richblack-5">
-                {user?.firstName}
-              </p>
+              <p className="text-sm font-medium text-richblack-5">{user?.firstName}</p>
             </div>
             <div>
               <p className="mb-2 text-sm text-richblack-600">Email</p>
-              <p className="text-sm font-medium text-richblack-5">
-                {user?.email}
-              </p>
+              <p className="text-sm font-medium text-richblack-5">{user?.email}</p>
             </div>
             <div>
               <p className="mb-2 text-sm text-richblack-600">Gender</p>
@@ -106,9 +105,7 @@ export default function MyProfile() {
           <div className="flex flex-col gap-y-5">
             <div>
               <p className="mb-2 text-sm text-richblack-600">Last Name</p>
-              <p className="text-sm font-medium text-richblack-5">
-                {user?.lastName}
-              </p>
+              <p className="text-sm font-medium text-richblack-5">{user?.lastName}</p>
             </div>
             <div>
               <p className="mb-2 text-sm text-richblack-600">Phone Number</p>
@@ -127,7 +124,5 @@ export default function MyProfile() {
         </div>
       </div>
     </div>
-    </Link>
-   
   );
 }

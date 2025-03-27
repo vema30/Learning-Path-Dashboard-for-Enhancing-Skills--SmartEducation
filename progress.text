@@ -2,7 +2,7 @@ i did revison of backend technologies which i uses  in my project
 i did a basic authApp using  JWT & cookies used mvc Model-View-Controller, a software design pattern 
 
 npm packages i installed : express mongoose nodemon  dotenv  cookie-parser nodemailer otp-generator  bcrypt 
-
+npm i momoent 
 created 9 schemas   Courses , CourseProgress ,Otp, Profile , Ratingand review , section ,subsection,tag,otp,and user
 for creating models & schemas i used reference from mdn for better clarity 
 https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/Express_Nodejs/mongoose

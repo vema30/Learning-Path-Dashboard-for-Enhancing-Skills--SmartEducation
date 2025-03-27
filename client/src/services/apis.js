@@ -65,10 +65,10 @@ export const contactusEndpoint = {
   CONTACT_US_API: BASE_URL + "/reach/contact",
 }
 
-// SETTINGS PAGE API
-export const settingsEndpoints = {
+// SETTINGS PAGE API    api/v1/profile
+export const settingsEndpoints = {    
   UPDATE_DISPLAY_PICTURE_API: BASE_URL + "/profile/updateDisplayPicture",
   UPDATE_PROFILE_API: BASE_URL + "/profile/updateProfile",
-  CHANGE_PASSWORD_API: BASE_URL + "/auth/changepassword",
+  CHANGE_PASSWORD_API: BASE_URL + "/auth/change-password",
   DELETE_PROFILE_API: BASE_URL + "/profile/deleteProfile",
 }

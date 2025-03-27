@@ -53,7 +53,7 @@ function SignupForm() {
   ]
 
   return (
-    <div className="bg-gradient-to-r from-purple-400 to-blue-500 p-10 m-20 rounded-xl shadow-lg w-full max-w-2xl mx-auto text-white relative">
+    <div className="bg-gradient-to-r from-purple-400 to-blue-500 p-10 m-20 rounded-xl shadow-lg w-full max-w-2xl mx-auto text-black relative">
       <img src={Signup} alt="Signup" className="absolute -top-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full shadow-lg" />
       <h2 className="text-center text-3xl font-bold mb-6">Create an Account</h2>
       <Tab tabData={tabData} field={accountType} setField={setAccountType} />

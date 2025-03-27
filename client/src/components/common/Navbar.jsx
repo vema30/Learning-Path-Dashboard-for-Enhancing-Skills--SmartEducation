@@ -17,21 +17,19 @@ export function Navbar() {
   const { user } = useSelector((state) => state.profile);
   const { totalItems } = useSelector((state) => state.cart);
   const location = useLocation();
-  useEffect(() => {
-    console.log("Token inside Navbar:", token);
-  }, [token]);
+ 
   
   const [subLinks, setSubLinks] = useState([]);
   const [loading, setLoading] = useState(false);
-      console.log("sublinks",subLinks);
+     // console.log("sublinks",subLinks);
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
         const res = await apiConnector("GET", categories.CATEGORIES_API);
-        console.log("API Response:", res);
+       // console.log("API Response:", res);
         setSubLinks(res.data.data);
-        console.log("subLinks:", res.data.data); // Log the subLinks data
+      //  console.log("subLinks:", res.data.data); // Log the subLinks data
       } catch (error) {
         console.log("Could not fetch Categories.", error);
       }
@@ -42,7 +40,7 @@ export function Navbar() {
   const matchRoute = (route) => {
     return matchPath({ path: route }, location.pathname);
   };
-  console.log("token",token );
+  //console.log("token",token );
   return (
     <div
       className={`flex h-14 items-center justify-center border-b-[1px] border-b-richblack-700 ${
