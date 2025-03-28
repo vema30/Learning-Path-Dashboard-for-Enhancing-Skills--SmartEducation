@@ -9,6 +9,11 @@ import ConfirmationModal from "../../common/ConfirmationModal"
 import SidebarLink from "./SidebarLink"
 
 export default function Sidebar() {
+  const handleLogout = () => {
+    dispatch(logout()); // Perform the logout action
+    navigate("/"); // Navigate to the home or login page after logging out
+  };
+
   const { user, loading: profileLoading } = useSelector(
     (state) => state.profile
   )
@@ -45,12 +50,13 @@ export default function Sidebar() {
           />
           <button
             onClick={() =>
+             
               setConfirmationModal({
                 text1: "Are you sure?",
                 text2: "You will be logged out of your account.",
                 btn1Text: "Logout",
                 btn2Text: "Cancel",
-                btn1Handler: () => dispatch(logout(navigate)),
+                btn1Handler: handleLogout,
                 btn2Handler: () => setConfirmationModal(null),
               })
             }

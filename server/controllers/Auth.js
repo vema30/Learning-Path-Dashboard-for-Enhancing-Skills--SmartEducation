@@ -105,10 +105,10 @@ const signUp = async (req, res) => {
 
         // Create Profile with Error Handling
         const profileDetails = await Profile.create({
-            gender: "X",
-            dateOfBirth: Date.now(),
+            gender: "ADD your gender",
+            dateOfBirth: new Date("1-1-1111"),
             about: "ADD ABOUT ",
-            contactNumber: "0000000000"
+            contactNumber: "5555555555"
         });
 
         if (!profileDetails) {
@@ -147,7 +147,8 @@ const login = async (req, res) => {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).populate("additionalDetails");
+        console.log(user);
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found, please sign up" });
         }

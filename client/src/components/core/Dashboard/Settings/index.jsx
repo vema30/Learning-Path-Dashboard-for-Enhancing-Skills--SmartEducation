@@ -7,7 +7,7 @@ import UpdatePassword from "./UpdatePassword"
 
 const Settings = () => {
    return (<div className='text-black'> 
-    <h1 className="mb-14 text-3xl font-medium text-richblack-5">
+    <h1 className="mb-14 text-3xl font-medium text-white">
           Edit Profile
         </h1>
         {/* Change Profile Picture */}

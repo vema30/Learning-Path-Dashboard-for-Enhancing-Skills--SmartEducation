@@ -134,6 +134,7 @@ export function login(email, password, navigate) {
 
 // Logout
 export function logout(navigate) {
+  console.log("i am in logout api");
   return (dispatch) => {
     dispatch(setToken(null));
     dispatch(setUser(null));
