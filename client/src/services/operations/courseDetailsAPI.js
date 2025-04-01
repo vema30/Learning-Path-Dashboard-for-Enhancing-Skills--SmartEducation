@@ -66,15 +66,34 @@ export const fetchCourseDetails = async (courseId) => {
 }
 
 // fetching the available course categories
+// export const fetchCourseCategories = async () => {
+//   let result = []
+//   try {
+//     const response = await apiConnector("GET", COURSE_CATEGORIES_API)
+//     console.log("COURSE_CATEGORIES_API API RESPONSE............", response)
+//     if (!response?.data?.success) {
+//       throw new Error("Could Not Fetch Course Categories")
+//     }
+//     result = response?.data?.data
+//   } catch (error) {
+//     console.log("COURSE_CATEGORY_API API ERROR............", error)
+//     toast.error(error.message)
+//   }
+//   return result
+// }
 export const fetchCourseCategories = async () => {
   let result = []
   try {
-    const response = await apiConnector("GET", COURSE_CATEGORIES_API)
+    const response = await apiConnector("GET", "http://localhost:4000/api/v1/course/categories");
+
     console.log("COURSE_CATEGORIES_API API RESPONSE............", response)
-    if (!response?.data?.success) {
-      throw new Error("Could Not Fetch Course Categories")
+
+    // Make sure the response has the expected structure
+    if (response?.data?.success && Array.isArray(response?.data?.data)) {
+      result = response?.data?.data
+    } else {
+      throw new Error("Invalid data structure or no categories found.")
     }
-    result = response?.data?.data
   } catch (error) {
     console.log("COURSE_CATEGORY_API API ERROR............", error)
     toast.error(error.message)
@@ -82,28 +101,69 @@ export const fetchCourseCategories = async () => {
   return result
 }
 
+// export const fetchCourseCategories = async () => {
+//   let result = [];
+//   try {
+//     const response = await apiConnector("GET", "https://localhost:4000/api/v1/course/categories");
+
+//     // Log the response to confirm its structure
+//     console.log("COURSE_CATEGORIES_API API RESPONSE............", response);
+
+//     // Check if the response structure is correct
+//     if (response?.data?.success && Array.isArray(response?.data?.data)) {
+//       result = response?.data?.data;
+//     } else {
+//       throw new Error("Invalid data structure or no categories found.");
+//     }
+//   } catch (error) {
+//     console.log("COURSE_CATEGORY_API API ERROR............", error);
+//     toast.error(error.message || "An error occurred while fetching categories");
+//   }
+//   return result;
+// }
+
 // add the course details
 export const addCourseDetails = async (data, token) => {
-  let result = null
-  const toastId = toast.loading("Loading...")
+  let result = null;
+  const toastId = toast.loading("Loading...");
+  console.log("CREATE_COURSE_API", CREATE_COURSE_API);
+  console.log("token in addcoursedetails",token);
+   console.log("hmm token",token);
   try {
-    const response = await apiConnector("POST", CREATE_COURSE_API, data, {
-      "Content-Type": "multipart/form-data",
+    const response = await apiConnector("POST", "http://localhost:4000/api/v1/course/createcourse", data, {
       Authorization: `Bearer ${token}`,
-    })
-    console.log("CREATE COURSE API RESPONSE............", response)
+    });
+    
+    
+
+    console.log("CREATE COURSE API RESPONSE............", response);
+
+    // Check the response structure; ensure the API returns a success field in data
     if (!response?.data?.success) {
-      throw new Error("Could Not Add Course Details")
+      console.log("response",);
+      throw new Error("Could Not Add Course Details");
     }
-    toast.success("Course Details Added Successfully")
-    result = response?.data?.data
+
+    toast.success("Course Details Added Successfully");
+    result = response?.data?.data;
   } catch (error) {
-    console.log("CREATE COURSE API ERROR............", error)
-    toast.error(error.message)
+    console.log("CREATE COURSE API ERROR............", error);
+
+    // Log full error details
+    if (error.response) {
+      console.log("Error Response:", error.response);
+      toast.error(`Error: ${error.response.data?.message || 'An error occurred'}`);
+    } else {
+      toast.error("There was an error with your request. Please try again.");
+    }
+  } finally {
+    // Ensure that the loading toast is dismissed in any case
+    toast.dismiss(toastId);
   }
-  toast.dismiss(toastId)
-  return result
-}
+
+  return result;
+};
+
 
 // edit the course details
 export const editCourseDetails = async (data, token) => {
@@ -113,6 +173,7 @@ export const editCourseDetails = async (data, token) => {
     const response = await apiConnector("POST", EDIT_COURSE_API, data, {
       "Content-Type": "multipart/form-data",
       Authorization: `Bearer ${token}`,
+
     })
     console.log("EDIT COURSE API RESPONSE............", response)
     if (!response?.data?.success) {
@@ -135,6 +196,7 @@ export const createSection = async (data, token) => {
   try {
     const response = await apiConnector("POST", CREATE_SECTION_API, data, {
       Authorization: `Bearer ${token}`,
+
     })
     console.log("CREATE SECTION API RESPONSE............", response)
     if (!response?.data?.success) {
@@ -157,6 +219,7 @@ export const createSubSection = async (data, token) => {
   try {
     const response = await apiConnector("POST", CREATE_SUBSECTION_API, data, {
       Authorization: `Bearer ${token}`,
+
     })
     console.log("CREATE SUB-SECTION API RESPONSE............", response)
     if (!response?.data?.success) {

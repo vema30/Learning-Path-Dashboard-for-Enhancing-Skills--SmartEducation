@@ -33,7 +33,6 @@ export default function CourseBuilderForm() {
 
   // handle form submission
   const onSubmit = async (data) => {
-    // console.log(data)
     setLoading(true)
 
     let result
@@ -47,7 +46,6 @@ export default function CourseBuilderForm() {
         },
         token
       )
-      // console.log("edit", result)
     } else {
       result = await createSection(
         {
@@ -57,12 +55,13 @@ export default function CourseBuilderForm() {
         token
       )
     }
+
     if (result) {
-      // console.log("section result", result)
       dispatch(setCourse(result))
       setEditSectionName(null)
       setValue("sectionName", "")
     }
+
     setLoading(false)
   }
 
@@ -81,14 +80,14 @@ export default function CourseBuilderForm() {
   }
 
   const goToNext = () => {
-    if (course.courseContent.length === 0) {
-      toast.error("Please add atleast one section")
+    if (!course?.courseContent?.length) {
+      toast.error("Please add at least one section")
       return
     }
     if (
-      course.courseContent.some((section) => section.subSection.length === 0)
+      course?.courseContent?.some((section) => section.subSection.length === 0)
     ) {
-      toast.error("Please add atleast one lecture in each section")
+      toast.error("Please add at least one lecture in each section")
       return
     }
     dispatch(setStep(3))
@@ -140,7 +139,7 @@ export default function CourseBuilderForm() {
           )}
         </div>
       </form>
-      {course.courseContent.length > 0 && (
+      {course?.courseContent?.length > 0 && (
         <NestedView handleChangeEditSectionName={handleChangeEditSectionName} />
       )}
       {/* Next Prev Button */}
@@ -151,7 +150,7 @@ export default function CourseBuilderForm() {
         >
           Back
         </button>
-        <IconBtn disabled={loading} text="Next" onclick={goToNext}>
+        <IconBtn disabled={loading} text="Next" onClick={goToNext}>
           <MdNavigateNext />
         </IconBtn>
       </div>

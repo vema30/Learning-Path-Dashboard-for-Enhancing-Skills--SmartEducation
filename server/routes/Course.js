@@ -1,10 +1,9 @@
-// Import the required modules
+// Import required modules
 const express = require("express");
 const router = express.Router();
 
-// Import the Controllers
 
-// Course Controllers Import
+const upload = require('../middlewares/upload');  
 const {
   createCourse,
   showAllCourses,
@@ -15,44 +14,46 @@ const {
   deleteCourse,
 } = require("../controllers/Course");
 
-// Categories Controllers Import
 const {
   showAllCategories,
   createCategory,
   categoryPageDetails,
 } = require("../controllers/Category");
 
-// Sections Controllers Import
 const {
   createSection,
   updateSection,
   deleteSection,
 } = require("../controllers/Section");
 
-// Sub-Sections Controllers Import
 const {
   createSubSection,
   updateSubSection,
   deleteSubSection,
 } = require("../controllers/Subsection");
 
-// Rating Controllers Import
 const {
   createRating,
   getAverageRating,
   getAllRating,
 } = require("../controllers/RatingAndReview");
 
-// Importing Middlewares
+// Import Middlewares
 const { auth, isInstructor, isStudent, isAdmin } = require("../middlewares/auth");
 
 // ********************************************************************************************************
-//                                      Course routes
+//                                      Multer Configuration for File Uploads
 // ********************************************************************************************************
 
-// Courses can Only be Created by Instructors
-router.post("/courses", auth, isInstructor, createCourse);
+// Ensure the "uploads/" directory exists
 
+// ********************************************************************************************************
+//                                      Course Routes
+// ********************************************************************************************************
+
+// Courses can only be created by Instructors
+// Example: http://localhost:4000/api/v1/course/createCourse
+router.post("/createCourse", auth, isInstructor, createCourse)
 // Add a Section to a Course
 router.post("/courses/:courseId/sections", auth, isInstructor, createSection);
 
@@ -90,18 +91,18 @@ router.get("/instructor/courses", auth, isInstructor, getInstructorCourses);
 router.delete("/courses/:courseId", deleteCourse);
 
 // ********************************************************************************************************
-//                                      Category routes (Only by Admin)
+//                                      Category Routes (Only by Admin)
 // ********************************************************************************************************
-// Category can Only be Created by Admin
 router.post("/categories", auth, isAdmin, createCategory);
 router.get("/categories", showAllCategories);
 router.get("/categories/:categoryId", categoryPageDetails);
 
 // ********************************************************************************************************
-//                                      Rating and Review
+//                                      Rating and Review Routes
 // ********************************************************************************************************
 router.post("/ratings", auth, isStudent, createRating);
 router.get("/ratings/average", getAverageRating);
 router.get("/ratings", getAllRating);
 
+// Export the router
 module.exports = router;

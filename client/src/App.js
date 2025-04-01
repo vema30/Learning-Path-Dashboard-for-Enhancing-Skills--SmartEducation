@@ -15,11 +15,14 @@ import MyProfile from "./components/core/Dashboard/MyProfile";
 import Cart from "./components/core/Dashboard/Cart";
 import EnrolledCourses from './components/core/Dashboard/EnrolledCourses'
 import Settings from './components/core/Dashboard/Settings/index'
+import AddCourse from './components/core/Dashboard/AddCourse/index'
+import CourseBuilderForm from "./components/core/Dashboard/AddCourse/CourseBuilder/CourseBuilderForm";
 const App = () => {
   //todo just create a privite route and check whether we have token  . if we have it then access this dashbored i mean render else dont return any chilers of sub routes of dashborad
   return (
     <div className="flex flex-col w-screen min-h-screen bg-richblue-900 text-white justify-between">
       <Navbar />
+     
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
@@ -35,11 +38,15 @@ const App = () => {
           <Route path="my-profile" element={<MyProfile />} />
           <Route path="cart" element={<Cart />} />
           <Route path="settings" element={<Settings />} />
-        
+          <Route path="add-course" element={<AddCourse />} />
           <Route path="enrolled-courses" element={<EnrolledCourses/>}></Route>
+          
         </Route>
       </Routes>
+      
       <Footer />
+     
+
     </div>
   );
 };

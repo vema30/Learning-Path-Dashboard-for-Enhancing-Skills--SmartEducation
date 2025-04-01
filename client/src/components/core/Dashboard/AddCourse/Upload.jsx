@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import { FiUploadCloud } from "react-icons/fi"
 import { useSelector } from "react-redux"
-
 import "video-react/dist/video-react.css"
 import { Player } from "video-react"
 
@@ -18,44 +17,52 @@ export default function Upload({
 }) {
   const { course } = useSelector((state) => state.course)
   const [selectedFile, setSelectedFile] = useState(null)
-  const [previewSource, setPreviewSource] = useState(
-    viewData ? viewData : editData ? editData : ""
-  )
+  const [previewSource, setPreviewSource] = useState(viewData || editData || "")
   const inputRef = useRef(null)
 
   const onDrop = (acceptedFiles) => {
     const file = acceptedFiles[0]
     if (file) {
+      if (video && !file.type.startsWith("video")) {
+        alert("Please upload a valid video file (MP4).")
+        return
+      }
+      if (!video && !file.type.startsWith("image")) {
+        alert("Please upload a valid image file (JPEG, PNG).")
+        return
+      }
       previewFile(file)
       setSelectedFile(file)
     }
   }
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: !video
-      ? { "image/*": [".jpeg", ".jpg", ".png"] }
-      : { "video/*": [".mp4"] },
+    accept: video
+      ? { "video/mp4": [".mp4"] }
+      : { "image/*": [".jpeg", ".jpg", ".png"] },
     onDrop,
   })
 
   const previewFile = (file) => {
-    // console.log(file)
     const reader = new FileReader()
     reader.readAsDataURL(file)
     reader.onloadend = () => {
       setPreviewSource(reader.result)
     }
+    reader.onerror = () => {
+      alert("There was an error reading the file")
+    }
   }
 
+  // Register the field with React Hook Form
   useEffect(() => {
     register(name, { required: true })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [register])
+  }, [register, name])
 
+  // Set the file value in React Hook Form whenever selectedFile changes
   useEffect(() => {
     setValue(name, selectedFile)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedFile, setValue])
+  }, [selectedFile, setValue, name])
 
   return (
     <div className="flex flex-col space-y-2">
@@ -93,20 +100,16 @@ export default function Upload({
             )}
           </div>
         ) : (
-          <div
-            className="flex w-full flex-col items-center p-6"
-            {...getRootProps()}
-          >
-            <input {...getInputProps()} ref={inputRef} />
+          <div className="flex w-full flex-col items-center p-6" {...getRootProps()}>
+            <input {...getInputProps()} ref={inputRef} id={name} />
             <div className="grid aspect-square w-14 place-items-center rounded-full bg-pure-greys-800">
               <FiUploadCloud className="text-2xl text-yellow-50" />
             </div>
             <p className="mt-2 max-w-[200px] text-center text-sm text-richblack-200">
               Drag and drop an {!video ? "image" : "video"}, or click to{" "}
-              <span className="font-semibold text-yellow-50">Browse</span> a
-              file
+              <span className="font-semibold text-yellow-50">Browse</span> a file
             </p>
-            <ul className="mt-10 flex list-disc justify-between space-x-12 text-center  text-xs text-richblack-200">
+            <ul className="mt-10 flex list-disc justify-between space-x-12 text-center text-xs text-richblack-200">
               <li>Aspect ratio 16:9</li>
               <li>Recommended size 1024x576</li>
             </ul>

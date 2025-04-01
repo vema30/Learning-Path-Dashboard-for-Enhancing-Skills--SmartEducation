@@ -4,7 +4,7 @@ const User = require("../models/User");
 const Profile = require("../models/Profile");
 const OtpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
-const jsonwebtoken = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const mailSender = require("../utils/mailSender");
 
@@ -142,50 +142,61 @@ const signUp = async (req, res) => {
 // Login
 const login = async (req, res) => {
     try {
+        // Get email and password from the request body
         const { email, password } = req.body;
+
+        // If email or password is missing, return an error
         if (!email || !password) {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
+        // Check if the user exists in the database
         const user = await User.findOne({ email }).populate("additionalDetails");
-        console.log(user);
+        console.log(user); // Debugging: To check user data
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found, please sign up" });
         }
 
+        // Check if the password matches
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ success: false, message: "Invalid password" });
         }
 
-        const token = jsonwebtoken.sign(
-            { id: user._id, email: user.email, role: user.accountType },
-            process.env.JWT_SECRET,
-            { expiresIn: "2d" }
+        // Create JWT token with user details (id, email, and role)
+        const token = jwt.sign(
+            { id: user._id, email: user.email, role: user.accountType },  // Payload
+            process.env.JWT_SECRET,  // Secret key from .env
+            { expiresIn: "2d" }  // Token expiration time (2 days)
         );
 
+        // Remove password from user object before sending back to client
         user.password = undefined;
 
-        // Setting the token in the cookie
+        // Set the token in the HTTP-only cookie
         res.cookie("token", token, {
-            expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-            httpOnly: true,
+            expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),  // 2 days expiration
+            httpOnly: true,  // Prevent client-side JS from accessing the cookie
+            secure: process.env.NODE_ENV === "production",  // Only set 'secure' flag in production
         });
 
-        // Responding with success and token
+        // Respond with success and the user info
         return res.status(200).json({
             success: true,
             message: "User logged in successfully",
             user,
-            token,
+            token,  // Send back the token
         });
     } catch (error) {
+        // Handle unexpected errors
         return res.status(500).json({
             success: false,
             message: error.message || "User cannot be logged in, please try again",
         });
     }
 };
+
+
 
 
 const changePassword = async (req, res) => {

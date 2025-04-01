@@ -1,18 +1,18 @@
 export default function IconBtn({
   text,
-  onClick,       // Change 'onclick' to 'onClick'
+  onclick,
   children,
   disabled,
   outline = false,
   customClasses,
-  type = "button",  // Default to 'button' if not provided
+  type,
 }) {
   return (
     <button
       disabled={disabled}
-      onClick={onClick}  // Use 'onClick' prop correctly
+      onClick={onclick}
       className={`flex items-center ${
-        outline ? "border border-yellow-50 bg-yellow text-white" : "bg-yellow-50"
+        outline ? "border border-yellow-50 bg-transparent" : "bg-yellow-50"
       } cursor-pointer gap-x-2 rounded-md py-2 px-5 font-semibold text-richblack-900 ${customClasses}`}
       type={type}
     >
@@ -25,5 +25,5 @@ export default function IconBtn({
         text
       )}
     </button>
-  );
+  )
 }

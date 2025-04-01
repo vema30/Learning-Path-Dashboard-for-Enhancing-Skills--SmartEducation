@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const path = require('path');
 
  const userRoutes = require("./routes/User");
 
@@ -36,13 +37,17 @@ app.use(
 	})
   );
   
+
 //middleware for fileuplading
 app.use(
 	fileUpload({
 		useTempFiles:true,
 		tempFileDir:"/tmp",
+		limits: { fileSize: 550 * 1024 * 1024 },
 	})
 )
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 //cloudinary connection
 cloudinaryConnect();
 
@@ -58,6 +63,7 @@ app.use("/api/v1/payment", paymentRoutes);
 //def route
 
 app.get("/", (req, res) => {
+	console.log("hey");
 	return res.json({
 		success:true,
 		message:`Your server is up and running....${PORT}`
