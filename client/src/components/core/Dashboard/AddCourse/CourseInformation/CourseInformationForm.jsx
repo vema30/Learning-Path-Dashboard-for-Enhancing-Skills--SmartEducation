@@ -43,7 +43,11 @@ export default function CourseInformationForm() {
       setLoading(false)
     }
     // if form is in edit mode
+    console.log("editCourse",editCourse);
+     
+    console.log("edirr ",course);
     if (editCourse) {
+      
       // console.log("data populated", editCourse)
       setValue("courseTitle", course.courseName)
       setValue("courseShortDesc", course.courseDescription)
@@ -54,35 +58,41 @@ export default function CourseInformationForm() {
       setValue("courseRequirements", course.instructions)
       setValue("courseImage", course.thumbnail)
     }
-    getCategories()
+    getCategories();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const isFormUpdated = () => {
-    const currentValues = getValues()
-    // console.log("changes after editing form values:", currentValues)
+    const currentValues = getValues();
+    
     if (
       currentValues.courseTitle !== course.courseName ||
       currentValues.courseShortDesc !== course.courseDescription ||
       currentValues.coursePrice !== course.price ||
-      currentValues.courseTags.toString() !== course.tag.toString() ||
+      currentValues.courseTags?.toString() !== course.tag?.toString() ||
       currentValues.courseBenefits !== course.whatYouWillLearn ||
-      currentValues.courseCategory._id !== course.category._id ||
-      currentValues.courseRequirements.toString() !==
-        course.instructions.toString() ||
+      currentValues.courseCategory?.toString() !== course.category?._id?.toString() || 
+      currentValues.courseRequirements?.toString() !== course.instructions?.toString() ||
       currentValues.courseImage !== course.thumbnail
     ) {
-      return true
+      return true;
     }
-    return false
-  }
+    
+    return false;
+  };
+  
 
   //   handle next button click
   const onSubmit = async (data) => {
     // console.log(data)
 
     if (editCourse) {
+      if (!course || !course._id) {
+        console.error("Error: Course data is missing or invalid.", course);
+        toast.error("Error: Course data is missing or invalid.");
+        return;
+      }
       // const currentValues = getValues()
       // console.log("changes after editing form values:", currentValues)
       // console.log("now course:", course)
@@ -90,8 +100,11 @@ export default function CourseInformationForm() {
       if (isFormUpdated()) {
         const currentValues = getValues()
         const formData = new FormData()
+        console.log("course n",course);
         // console.log(data)
-        formData.append("courseId", course._id)
+        const { _id } = course;
+
+        formData.append("courseId", _id)
         if (currentValues.courseTitle !== course.courseName) {
           formData.append("courseName", data.courseTitle)
         }
@@ -107,13 +120,10 @@ export default function CourseInformationForm() {
         if (currentValues.courseBenefits !== course.whatYouWillLearn) {
           formData.append("whatYouWillLearn", data.courseBenefits)
         }
-        if (currentValues.courseCategory._id !== course.category._id) {
+      
           formData.append("category", data.courseCategory)
-        }
-        if (
-          currentValues.courseRequirements.toString() !==
-          course.instructions.toString()
-        ) {
+        
+       {
           formData.append(
             "instructions",
             JSON.stringify(data.courseRequirements)
@@ -122,9 +132,10 @@ export default function CourseInformationForm() {
         if (currentValues.courseImage !== course.thumbnail) {
           formData.append("thumbnailImage", data.courseImage)
         }
-        // console.log("Edit Form data: ", formData)
+         console.log("Edit Form data: ", formData)
         setLoading(true)
         const result = await editCourseDetails(formData, token)
+        console.log("resuslt",result);
         setLoading(false)
         if (result) {
           dispatch(setStep(2))
@@ -147,7 +158,8 @@ export default function CourseInformationForm() {
     formData.append("instructions", JSON.stringify(data.courseRequirements))
     formData.append("thumbnailImage", data.courseImage)
     setLoading(true)
-    const result = await addCourseDetails(formData, token)
+    const result = await addCourseDetails(formData, token);
+    console.log("ressult in edit",result);
     if (result) {
       dispatch(setStep(2))
       dispatch(setCourse(result))

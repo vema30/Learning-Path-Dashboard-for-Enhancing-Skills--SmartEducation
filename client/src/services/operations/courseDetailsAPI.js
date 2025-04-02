@@ -170,7 +170,7 @@ export const editCourseDetails = async (data, token) => {
   let result = null
   const toastId = toast.loading("Loading...")
   try {
-    const response = await apiConnector("POST", EDIT_COURSE_API, data, {
+    const response = await apiConnector("PUT", 'http://localhost:4000/api/v1/course/editCourse', data, {
       "Content-Type": "multipart/form-data",
       Authorization: `Bearer ${token}`,
 
@@ -184,9 +184,10 @@ export const editCourseDetails = async (data, token) => {
   } catch (error) {
     console.log("EDIT COURSE API ERROR............", error)
     toast.error(error.message)
+    return false;
   }
   toast.dismiss(toastId)
-  return result
+  return true;
 }
 
 // create a section

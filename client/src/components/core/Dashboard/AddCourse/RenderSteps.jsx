@@ -4,11 +4,22 @@ import { useSelector } from "react-redux"
 import CourseBuilderForm from "./CourseBuilder/CourseBuilderForm"
 import CourseInformationForm from "./CourseInformation/CourseInformationForm"
 import PublishCourse from "./PublishCourse"
-
+import { useEffect } from "react"
+import { useDispatch } from "react-redux"
+import {
+  setCourse,
+  setEditCourse,
+  setStep,
+} from "../../../../slices/courseSlice"
 
 export default function RenderSteps() {
+  const dispatch=useDispatch();
   const { step } = useSelector((state) => state.course)
-
+   useEffect(()=>{
+    console.log("step",step);
+     
+   },[step]);
+  
   const steps = [
     {
       id: 1,
@@ -85,6 +96,22 @@ export default function RenderSteps() {
       {step === 1 && <CourseInformationForm />}
       {step === 2 && <CourseBuilderForm />}
       {step === 3 &&  <PublishCourse /> }
+     
+        {/* 
+        // This button is just for testing purposes
+        // It changes the step to the next one
+        <button
+        className="bg-caribbeangreen-25 p-4 text-white"
+        onClick={()=>{
+          dispatch(setStep(step+1));
+          if(step==4)
+          {
+            dispatch(setStep(1));
+          }
+        }
+        }
+        >click me to change step</button> */}
+     
     </>
   )
 }

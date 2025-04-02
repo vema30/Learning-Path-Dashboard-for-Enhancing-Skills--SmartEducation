@@ -13,16 +13,17 @@ import ForgetPassword from "./components/common/ForgetPassword";
 import ResetPassword from "./components/common/ResetPassword";
 import MyProfile from "./components/core/Dashboard/MyProfile";
 import Cart from "./components/core/Dashboard/Cart";
-import EnrolledCourses from './components/core/Dashboard/EnrolledCourses'
-import Settings from './components/core/Dashboard/Settings/index'
-import AddCourse from './components/core/Dashboard/AddCourse/index'
+import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
+import Settings from "./components/core/Dashboard/Settings/index";
+import AddCourse from "./components/core/Dashboard/AddCourse/index";
+import PrivateRoute from "./components/core/Auth/PrivateRoute";
 import CourseBuilderForm from "./components/core/Dashboard/AddCourse/CourseBuilder/CourseBuilderForm";
+
 const App = () => {
-  //todo just create a privite route and check whether we have token  . if we have it then access this dashbored i mean render else dont return any chilers of sub routes of dashborad
   return (
     <div className="flex flex-col w-screen min-h-screen bg-richblue-900 text-white justify-between">
       <Navbar />
-     
+
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
@@ -33,20 +34,24 @@ const App = () => {
         <Route path="/forget-password" element={<ForgetPassword />} />
         <Route path="/update-password/:token" element={<ResetPassword />} />
 
-        {/* Dashboard as a parent route with nested paths */}
-        <Route path="/dashboard" element={<Dashboard />}>
+        {/* Private Dashboard Route */}
+        <Route
+          path="/dashboard/*"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        >
           <Route path="my-profile" element={<MyProfile />} />
           <Route path="cart" element={<Cart />} />
           <Route path="settings" element={<Settings />} />
           <Route path="add-course" element={<AddCourse />} />
-          <Route path="enrolled-courses" element={<EnrolledCourses/>}></Route>
-          
+          <Route path="enrolled-courses" element={<EnrolledCourses />} />
         </Route>
       </Routes>
-      
-      <Footer />
-     
 
+      <Footer />
     </div>
   );
 };

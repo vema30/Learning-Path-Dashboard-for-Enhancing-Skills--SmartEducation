@@ -17,6 +17,7 @@ import {
 import IconBtn from "../../../../common/IconBtn"
 import NestedView from "./NestedView"
 
+
 export default function CourseBuilderForm() {
   const {
     register,
@@ -30,7 +31,7 @@ export default function CourseBuilderForm() {
   const [loading, setLoading] = useState(false)
   const [editSectionName, setEditSectionName] = useState(null)
   const dispatch = useDispatch()
-
+console.log("course in step2",course);
   // handle form submission
   const onSubmit = async (data) => {
     setLoading(true)
@@ -94,7 +95,8 @@ export default function CourseBuilderForm() {
   }
 
   const goBack = () => {
-    dispatch(setStep(1))
+    dispatch(setStep(1));
+ 
     dispatch(setEditCourse(true))
   }
 

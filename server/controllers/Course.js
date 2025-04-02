@@ -12,7 +12,7 @@ const { uploadImageToCloudinary } = require("../utils/imageUploader")
 
 
 const  createCourse = async (req, res) => {
-    console.log("hhh")
+    //console.log("hhh")
     try {
        
       // Get user ID from request object
@@ -242,6 +242,7 @@ const getFullCourseDetails = async (req, res) => {
 
 // Controller to edit course details
 const editCourse = async (req, res) => {
+ console.log("hereee haree rammaaa")
     try {
         const { courseId, courseName, courseDescription, whatYouWillLearn, price, category } = req.body;
 
@@ -249,29 +250,45 @@ const editCourse = async (req, res) => {
         if (!course) {
             return res.status(404).json({
                 success: false,
-                message: "Course not found"
+                message: "Course not found",
             });
         }
 
-        if (courseName) course.courseName = courseName;
-        if (courseDescription) course.courseDescription = courseDescription;
-        if (whatYouWillLearn) course.whatYouWillLearn = whatYouWillLearn;
-        if (price) course.price = price;
-        if (category) course.category = category;
+        // Ensure only the instructor who created the course can edit
+        if (course.instructor.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to edit this course",
+            });
+        }
 
-        await course.save();
+        // Update course fields dynamically
+        const updatedCourse = await Course.findByIdAndUpdate(
+            courseId,
+            { courseName, courseDescription, whatYouWillLearn, price, category },
+            { new: true, runValidators: true }
+        );
 
         return res.status(200).json({
             success: true,
             message: "Course updated successfully",
-            course,
+            course: {
+                _id: updatedCourse._id,
+                courseName: updatedCourse.courseName,
+                courseDescription: updatedCourse.courseDescription,
+                whatYouWillLearn: updatedCourse.whatYouWillLearn,
+                price: updatedCourse.price,
+                category: updatedCourse.category,
+            },
         });
+        
     } catch (e) {
         return res.status(500).json({
             success: false,
             message: e.message,
         });
     }
+
 };
 
 // Controller to fetch courses by instructor
