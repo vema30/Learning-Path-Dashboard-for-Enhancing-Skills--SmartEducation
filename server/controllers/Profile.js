@@ -131,32 +131,55 @@ exports.getAllUserDetails = async (req, res) => {
 
 exports.updateDisplayPicture = async (req, res) => {
   try {
-    const displayPicture = req.files.displayPicture
-    const userId = req.user.id
+    const displayPicture = req.files.displayPicture;
+    const userId = req.user.id;
+
+    if (!displayPicture) {
+      return res.status(400).json({
+        success: false,
+        message: "No image file provided",
+      });
+    }
+
+    // Upload image to Cloudinary
     const image = await uploadImageToCloudinary(
       displayPicture,
       process.env.FOLDER_NAME,
       1000,
       1000
-    )
-    console.log(image)
+    );
+
+    console.log("Uploaded Image:", image);
+
+    // Update user's image field in DB
     const updatedProfile = await User.findByIdAndUpdate(
-      { _id: userId },
+      userId,
       { image: image.secure_url },
       { new: true }
-    )
-    res.send({
+    ).select("-password");
+
+    if (!updatedProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
       success: true,
-      message: `Image Updated successfully`,
+      message: "Image Updated Successfully",
       data: updatedProfile,
-    })
+    });
   } catch (error) {
+    console.error("Error updating display picture:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
-    })
+      message: "Something went wrong while updating the profile picture",
+      error: error.message,
+    });
   }
-}
+};
+
 
 exports.getEnrolledCourses = async (req, res) => {
   try {

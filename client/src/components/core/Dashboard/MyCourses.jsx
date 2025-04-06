@@ -15,14 +15,15 @@ export default function MyCourses() {
   useEffect(() => {
     const fetchCourses = async () => {
       const result = await fetchInstructorCourses(token)
+      console.log("result",result);
       if (result) {
-        setCourses(result)
+        setCourses(...courses,result)
       }
     }
     fetchCourses()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
+  }, [token])
+console.log("c",courses);
   return (
     <div>
       <div className="mb-14 flex items-center justify-between">

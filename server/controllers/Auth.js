@@ -82,10 +82,10 @@ const sendOTP = async (req, res) => {
 // Sign Up
 const signUp = async (req, res) => {
     try {
-        const { email, password, confirmPassword, firstName, lastName, accountType, otp } = req.body;
-
-        // Check all required fields
-        if (!email || !password || !confirmPassword || !firstName || !lastName || !accountType || !otp) {
+        const { email, password, confirmPassword, firstName, lastName, accountType } = req.body;
+  //add otp , otpin to the body
+        // Check all required fields             
+        if (!email || !password || !confirmPassword || !firstName || !lastName || !accountType ) { //|| !otp
             return res.status(403).json({ success: false, message: "All fields are required" });
         }
 
@@ -99,7 +99,7 @@ const signUp = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ success: false, message: "User already exists" });
         }
-
+    //check wether otp is valid or not write logic here
         // Hash Password
         const hashedPassword = await bcrypt.hash(password, 10);
 

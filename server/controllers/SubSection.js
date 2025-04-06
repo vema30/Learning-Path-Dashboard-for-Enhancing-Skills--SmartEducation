@@ -1,20 +1,27 @@
 const SubSection = require("../models/SubSection");
 const Section = require("../models/Section");
-const uploadVideoToCloudinary = require("../utils/imageUploader"); // Assuming you have a utility for uploading
+// const uploadVideoToCloudinary = require("../utils/imageUploader"); // Assuming you have a utility for uploading
+const { uploadFileToCloudinary } = require("../utils/uploadFile"); // Assuming you have a utility for uploading
 
-// Create SubSection
+// // Create SubSection
 const createSubSection = async (req, res) => {
     try {
         const { title, sectionId, timeDuration, description } = req.body;
-        if (!title || !sectionId || !timeDuration || !description || !req.file) {
+        console.log("📩 Received Body:", req.body);
+        console.log("📂 Received Files:", req.files); // ✅ Debugging file upload
+
+        if (!title || !sectionId || !timeDuration || !description || !req.files || !req.files.video) {
             return res.status(400).json({
                 success: false,
-                message: "All fields are required",
+                message: "All fields are required, including the video file!",
             });
         }
 
-        const video = req.file.path; // Ensure you're accessing the correct path
-        const uploadedDetails = await uploadVideoToCloudinary(video, process.env.FOLDER_NAME);
+        const video = Array.isArray(req.files.video) ? req.files.video[0] : req.files.video; // ✅ Get the first video
+        console.log("🎥 Uploading video:", video.name);
+
+        // Upload video to Cloudinary
+        const uploadedDetails = await uploadFileToCloudinary(video, process.env.FOLDER_NAME);
 
         const newSubSection = await SubSection.create({
             title,
@@ -37,6 +44,7 @@ const createSubSection = async (req, res) => {
             updatedSection,
         });
     } catch (e) {
+        console.error("❌ Error creating subsection:", e);
         return res.status(500).json({
             success: false,
             error: e.message,
@@ -44,6 +52,7 @@ const createSubSection = async (req, res) => {
         });
     }
 };
+
 
 // Update SubSection
 const updateSubSection = async (req, res) => {

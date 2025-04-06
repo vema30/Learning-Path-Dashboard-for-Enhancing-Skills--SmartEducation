@@ -1,100 +1,126 @@
-import { useEffect, useRef, useState } from "react"
-import { FiUpload } from "react-icons/fi"
+import { useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-
+import { useDropzone } from "react-dropzone"
+import { FiUploadCloud } from "react-icons/fi"
+import { toast } from "react-hot-toast"
 import { updateDisplayPicture } from "../../../../services/operations/SettingsAPI"
 import IconBtn from "../../../common/IconBtn"
 
 export default function ChangeProfilePicture() {
+  const dispatch = useDispatch()
   const { token } = useSelector((state) => state.auth)
   const { user } = useSelector((state) => state.profile)
-  const dispatch = useDispatch()
 
-  const [loading, setLoading] = useState(false)
-  const [imageFile, setImageFile] = useState(null)
+  const [selectedFile, setSelectedFile] = useState(null)
   const [previewSource, setPreviewSource] = useState(null)
+  const [loading, setLoading] = useState(false)
 
-  const fileInputRef = useRef(null)
+  const inputRef = useRef(null)
 
-  const handleClick = () => {
-    fileInputRef.current.click()
-  }
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]
-    // console.log(file)
-    if (file) {
-      setImageFile(file)
-      previewFile(file)
+  const onDrop = (acceptedFiles) => {
+    const file = acceptedFiles[0]
+    if (!file || !file.type.startsWith("image/")) {
+      toast.error("Please upload a valid image")
+      return
     }
+
+    setSelectedFile(file)
+    previewFile(file)
+    toast.success("Image selected")
   }
 
   const previewFile = (file) => {
     const reader = new FileReader()
     reader.readAsDataURL(file)
-    reader.onloadend = () => {
-      setPreviewSource(reader.result)
-    }
+    reader.onloadend = () => setPreviewSource(reader.result)
+    reader.onerror = () => toast.error("Failed to preview image")
   }
 
-  const handleFileUpload = () => {
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: {
+      "image/jpeg": [".jpeg", ".jpg"],
+      "image/png": [".png"],
+      "image/webp": [".webp"],
+      "image/gif": [".gif"],
+    },
+    onDrop,
+  })
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast.error("Please select an image first")
+      return
+    }
+
+    setLoading(true)
+    const formData = new FormData()
+    formData.append("displayPicture", selectedFile)
+
     try {
-      console.log("uploading...")
-      setLoading(true)
-      const formData = new FormData()
-      formData.append("displayPicture", imageFile)
-      // console.log("formdata", formData)
-      dispatch(updateDisplayPicture(token, formData)).then(() => {
-        setLoading(false)
-      })
-    } catch (error) {
-      console.log("ERROR MESSAGE - ", error.message)
+      await dispatch(updateDisplayPicture(token, formData))
+      toast.success("Profile picture updated!")
+      setSelectedFile(null)
+      setPreviewSource(null)
+    } catch (err) {
+      toast.error("Failed to upload")
+    } finally {
+      setLoading(false)
     }
   }
 
-  useEffect(() => {
-    if (imageFile) {
-      previewFile(imageFile)
-    }
-  }, [imageFile])
   return (
-    <>
-      <div className="flex items-center justify-between rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-8 px-12 text-richblack-5">
-        <div className="flex items-center gap-x-4">
-          <img
-            src={previewSource || user?.image}
-            alt={`profile-${user?.firstName}`}
-            className="aspect-square w-[78px] rounded-full object-cover"
-          />
-          <div className="space-y-2">
-            <p>Change Profile Picture</p>
-            <div className="flex flex-row gap-3">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-                accept="image/png, image/gif, image/jpeg"
-              />
-              <button
-                onClick={handleClick}
-                disabled={loading}
-                className="cursor-pointer rounded-md bg-richblack-700 py-2 px-5 font-semibold text-richblack-50"
-              >
-                Select
-              </button>
-              <IconBtn
-                text={loading ? "Uploading..." : "Upload"}
-                onclick={handleFileUpload}
-              >
-                {!loading && (
-                  <FiUpload className="text-lg text-richblack-900" />
-                )}
-              </IconBtn>
+    <div className="rounded-2xl border border-richblack-700 bg-richblack-800 p-6 sm:p-8 text-richblack-5 shadow-lg">
+      <div className="flex flex-col sm:flex-row items-center gap-6">
+        <img
+          src={previewSource || user?.image || "/default-avatar.png"}
+          alt="Profile"
+          className="aspect-square w-[90px] sm:w-[100px] rounded-full object-cover border border-richblack-600 shadow-md"
+        />
+
+        <div className="w-full">
+          <p className="text-base font-semibold text-richblack-25 mb-3">Change Profile Picture</p>
+
+          <div
+            {...getRootProps()}
+            className={`${
+              isDragActive ? "bg-richblack-600" : "bg-richblack-700"
+            } flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-richblack-500 px-5 py-6 transition-all hover:border-yellow-200 hover:bg-richblack-600`}
+          >
+            <input {...getInputProps()} ref={inputRef} />
+            <div className="flex flex-col items-center">
+              <FiUploadCloud className="text-3xl text-yellow-100 mb-2" />
+              <p className="text-sm text-center text-richblack-200">
+                Drag & drop or <span className="font-semibold text-yellow-50">click</span> to select image
+              </p>
+              <p className="text-xs text-richblack-400 mt-1">JPG, PNG, WEBP (Max size: 5MB)</p>
             </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            <IconBtn
+              text={loading ? "Uploading..." : "Upload"}
+              onclick={handleUpload}
+              disabled={loading}
+              className={`text-xs text-pink-200 underline ${selectedFile ? "hidden" : ""}`}
+            >
+              {!loading && <FiUploadCloud className="text-lg text-richblack-900" />}
+            </IconBtn>
+
+            {selectedFile && (
+              <button
+                onClick={() => {
+                  setSelectedFile(null)
+                  setPreviewSource(null)
+                }}
+                
+
+              >
+                Cancel
+              </button>
+            )}
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }

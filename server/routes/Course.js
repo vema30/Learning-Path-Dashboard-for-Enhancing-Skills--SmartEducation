@@ -1,7 +1,7 @@
 // Import required modules
 const express = require("express");
 const router = express.Router();
-
+const uploadVideo = require("../middlewares/uploadVideo");
 
 const upload = require('../middlewares/upload');  
 const {
@@ -18,6 +18,7 @@ const {
   showAllCategories,
   createCategory,
   categoryPageDetails,
+  
 } = require("../controllers/Category");
 
 const {
@@ -30,7 +31,7 @@ const {
   createSubSection,
   updateSubSection,
   deleteSubSection,
-} = require("../controllers/Subsection");
+} = require("../controllers/SubSection");
 
 const {
   createRating,
@@ -71,7 +72,23 @@ router.put("/subsections/:subSectionId", auth, isInstructor, updateSubSection);
 router.delete("/subsections/:subSectionId", auth, isInstructor, deleteSubSection);
 
 // Add a Sub Section to a Section
-router.post("/sections/:sectionId/subsections", auth, isInstructor, createSubSection);
+// router.post("/sections/:sectionId/subsections", auth, isInstructor, createSubSection);
+// router.post(
+//   "/sections/:sectionId/subsections",
+//   auth,
+//   isInstructor,
+//   uploadVideo.single("video"), // Ensure you're using uploadVideo, not upload
+//   createSubSection
+// );
+// No need for `uploadVideo.single("video") i am using express-fileupload`
+//
+//
+// add auth and instructure middleware
+router.post(
+  "/sections/:sectionId/subsections",
+  
+  createSubSection 
+);
 
 // Get all Registered Courses
 router.get("/courses", showAllCourses);
@@ -95,9 +112,11 @@ router.delete("/courses/:courseId", deleteCourse);
 //                                      Category Routes (Only by Admin)
 // ********************************************************************************************************
 router.post("/categories", auth, isAdmin, createCategory);
-router.get("/categories", showAllCategories);
-router.get("/categories/:categoryId", categoryPageDetails);
+router.get("/categories", showAllCategories); 
+router.post("/categories1", categoryPageDetails); 
 
+router.get("/categories/:categoryId", categoryPageDetails);
+///http://localhost:4000/api/v1/course/getCategoryPageDetails
 // ********************************************************************************************************
 //                                      Rating and Review Routes
 // ********************************************************************************************************

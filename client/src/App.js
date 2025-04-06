@@ -17,8 +17,11 @@ import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
 import Settings from "./components/core/Dashboard/Settings/index";
 import AddCourse from "./components/core/Dashboard/AddCourse/index";
 import PrivateRoute from "./components/core/Auth/PrivateRoute";
-import CourseBuilderForm from "./components/core/Dashboard/AddCourse/CourseBuilder/CourseBuilderForm";
-
+import CourseDetailPage from "./components/pages/CourseDetailPage";
+import CourseDetails from "./components/pages/CourseDetails";
+//import CourseBuilderForm from "./components/core/Dashboard/AddCourse/CourseBuilder/CourseBuilderForm";
+import MyCourses from './components/core/Dashboard/MyCourses'
+import Catalog from "./components/pages/Catalog";
 const App = () => {
   return (
     <div className="flex flex-col w-screen min-h-screen bg-richblue-900 text-white justify-between">
@@ -33,6 +36,8 @@ const App = () => {
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
         <Route path="/update-password/:token" element={<ResetPassword />} />
+        <Route path="/catalog/:catalogName" element={<Catalog/>}/>
+        <Route path="/courses/:courseId" element={<CourseDetails />} />
 
         {/* Private Dashboard Route */}
         <Route
@@ -46,6 +51,8 @@ const App = () => {
           <Route path="my-profile" element={<MyProfile />} />
           <Route path="cart" element={<Cart />} />
           <Route path="settings" element={<Settings />} />
+          
+          <Route path="my-courses" element={<MyCourses/>} />
           <Route path="add-course" element={<AddCourse />} />
           <Route path="enrolled-courses" element={<EnrolledCourses />} />
         </Route>

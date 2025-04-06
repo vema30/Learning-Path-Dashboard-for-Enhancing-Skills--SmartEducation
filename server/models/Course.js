@@ -22,7 +22,7 @@ const CourseSchema = new Schema({
     required: true,
     trim: true
   },
-  courseContent: [{
+  sections: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "Section"
   }],

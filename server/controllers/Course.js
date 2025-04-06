@@ -291,13 +291,22 @@ const editCourse = async (req, res) => {
 
 };
 
-// Controller to fetch courses by instructor
+
 const getInstructorCourses = async (req, res) => {
     try {
-        const instructorId = req.user.id;
+        const instructorId = req.user?.id; // Ensure user is properly extracted from req
+        if (!instructorId) {
+            return res.status(400).json({
+                success: false,
+                message: "Instructor ID is required",
+            });
+        }
+
+        console.log("Instructor ID:", instructorId);
 
         const courses = await Course.find({ instructor: instructorId })
-            .populate("category", "name description");
+            .populate("Category", "name description")
+            .exec(); // Ensure query execution
 
         if (!courses || courses.length === 0) {
             return res.status(404).json({
@@ -311,13 +320,16 @@ const getInstructorCourses = async (req, res) => {
             message: "Instructor's courses fetched successfully",
             courses,
         });
-    } catch (e) {
+    } catch (error) {
+        console.error("Error fetching instructor courses:", error);
         return res.status(500).json({
             success: false,
-            message: e.message,
+            message: "Internal Server Error",
+            error: error.message,
         });
     }
 };
+
 
 // Controller to delete a course
 const deleteCourse = async (req, res) => {

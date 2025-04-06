@@ -38,11 +38,23 @@ export default function Upload({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: video
-      ? { "video/mp4": [".mp4"] }
-      : { "image/*": [".jpeg", ".jpg", ".png"] },
+      ? {
+          "video/mp4": [".mp4"],
+          "video/quicktime": [".mov"],
+          "video/x-msvideo": [".avi"],
+          "video/x-matroska": [".mkv"],
+          "video/webm": [".webm"],
+          "video/mpeg": [".mpeg", ".mpg"],
+        }
+      : {
+          "image/jpeg": [".jpeg", ".jpg"],
+          "image/png": [".png"],
+          "image/webp": [".webp"],
+          "image/gif": [".gif"],
+        },
     onDrop,
   })
-
+  
   const previewFile = (file) => {
     const reader = new FileReader()
     reader.readAsDataURL(file)

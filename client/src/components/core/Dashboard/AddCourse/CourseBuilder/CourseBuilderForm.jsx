@@ -19,6 +19,7 @@ import NestedView from "./NestedView"
 
 
 export default function CourseBuilderForm() {
+
   const {
     register,
     handleSubmit,
@@ -81,18 +82,22 @@ console.log("course in step2",course);
   }
 
   const goToNext = () => {
-    if (!course?.courseContent?.length) {
-      toast.error("Please add at least one section")
-      return
+    console.log("hey");
+    console.log("course in step2", course);
+  
+    if (!Array.isArray(course?.sections) || course.sections.length === 0) {
+      toast.error("Please add at least one section");
+      return;
     }
-    if (
-      course?.courseContent?.some((section) => section.subSection.length === 0)
-    ) {
-      toast.error("Please add at least one lecture in each section")
-      return
+  
+    if (course.sections.some((section) => !Array.isArray(section?.subSections) || section.subSections.length === 0)) {
+      toast.error("Please add at least one lecture in each section");
+      return;
     }
-    dispatch(setStep(3))
-  }
+    console.log("course in step2", "hello i am in step2 ->step3");
+    dispatch(setStep(3));
+  };
+  
 
   const goBack = () => {
     dispatch(setStep(1));
@@ -127,6 +132,7 @@ console.log("course in step2",course);
             disabled={loading}
             text={editSectionName ? "Edit Section Name" : "Create Section"}
             outline={true}
+            onclick={handleSubmit(onSubmit)}
           >
             <IoAddCircleOutline size={20} className="text-yellow-50" />
           </IconBtn>
@@ -141,8 +147,12 @@ console.log("course in step2",course);
           )}
         </div>
       </form>
-      {course?.courseContent?.length > 0 && (
-        <NestedView handleChangeEditSectionName={handleChangeEditSectionName} />
+     
+      {course?.sections?.length > 0 && (
+       <div>
+        {/* <p className="text-white">hey debbug</p> */}
+         <NestedView handleChangeEditSectionName={handleChangeEditSectionName} />
+        </div>
       )}
       {/* Next Prev Button */}
       <div className="flex justify-end gap-x-3">
@@ -152,7 +162,11 @@ console.log("course in step2",course);
         >
           Back
         </button>
-        <IconBtn disabled={loading} text="Next" onClick={goToNext}>
+        <IconBtn disabled={loading} text="Next" 
+        onclick={
+          
+              goToNext
+        }>
           <MdNavigateNext />
         </IconBtn>
       </div>

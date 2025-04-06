@@ -3,7 +3,9 @@ const Course = require("../models/Course");
 
 const createSection = async (req, res) => {
     try {
-        const { sectionName, courseId } = req.body;
+        const { courseId } = req.params;
+        const { sectionName } = req.body; 
+
         if (!sectionName || !courseId) {
             return res.status(400).json({
                 success: false,
@@ -11,14 +13,42 @@ const createSection = async (req, res) => {
             });
         }
 
-        const newSection = await Section.create({ sectionName, courseId });
+        console.log("Section Name:", sectionName);
+        console.log("Request Body:", req.body);
+
+        // Declare newSection outside the try block
+        let newSection = null;
+
+        // Create section
+        try {
+            newSection = await Section.create({ sectionName, courseId });
+            console.log("New Section Created:", newSection);
+        } catch (e) {
+            console.log("Error in creating section:", e.message);
+            return res.status(500).json({ success: false, message: "Error creating section" });
+        }
+
+        // Ensure newSection is successfully created before updating the course
+        if (!newSection) {
+            return res.status(500).json({
+                success: false,
+                message: "Failed to create section",
+            });
+        }
 
         // Update course and populate sections
-        const updatedCourse = await Course.findByIdAndUpdate(
-            courseId,
-            { $push: { sections: newSection._id } },
-            { new: true }
-        ).populate("sections");
+        let updatedCourse = null;
+        try {
+            updatedCourse = await Course.findByIdAndUpdate(
+                courseId,
+                { $push: { sections: newSection._id } },
+                { new: true }
+            ).populate("sections");
+            console.log("Updated Course:", updatedCourse);
+        } catch (e) {
+            console.log("Error updating course:", e.message);
+            return res.status(500).json({ success: false, message: "Error updating course" });
+        }
 
         return res.status(201).json({
             success: true,
@@ -34,6 +64,7 @@ const createSection = async (req, res) => {
         });
     }
 };
+
 
 const updateSection = async (req, res) => {
     try {
@@ -67,7 +98,8 @@ const updateSection = async (req, res) => {
 
 const deleteSection = async (req, res) => {
     try {
-        const { sectionId, courseId } = req.body;
+        const { sectionId, courseId } = req.params; // Get from params
+
         if (!sectionId || !courseId) {
             return res.status(400).json({
                 success: false,
@@ -77,7 +109,7 @@ const deleteSection = async (req, res) => {
 
         // Delete the section
         const deletedSection = await Section.findByIdAndDelete(sectionId);
-
+        console.log("Deleted Section:", deletedSection);
         if (!deletedSection) {
             return res.status(404).json({
                 success: false,
@@ -102,6 +134,7 @@ const deleteSection = async (req, res) => {
         });
     }
 };
+
 
 // Export functions
 module.exports = { createSection, updateSection, deleteSection };
