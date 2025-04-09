@@ -24,7 +24,8 @@ const CourseSchema = new Schema({
   },
   sections: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Section"
+    ref: "Section",
+    default: []
   }],
   ratingAndReview: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -48,6 +49,8 @@ const CourseSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }]
+}, {
+  timestamps: true  // ✅ This adds createdAt and updatedAt
 });
 
 // Compile model from schema

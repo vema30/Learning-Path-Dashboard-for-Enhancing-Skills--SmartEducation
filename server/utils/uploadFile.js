@@ -1,23 +1,16 @@
+const fs = require("fs");
 const cloudinary = require('cloudinary').v2;
 
-exports.uploadFileToCloudinary = async (file, folder, height, quality) => {
+exports.uploadFileToCloudinary = async (file, folder, quality) => {
+    const options = { resource_type: "auto", folder };
+    if (quality) options.quality = quality;
+  
     try {
-        if (!file || !file.tempFilePath) {
-            throw new Error("Invalid file input. Make sure the file is properly uploaded.");
-        }
-
-        const options = { folder };
-        if (height) options.height = height;
-        if (quality) options.quality = quality;
-        options.resource_type = "auto"; // Supports both images and videos
-
-        console.log("📤 Uploading file to Cloudinary:", file.tempFilePath);
-        const uploadResponse = await cloudinary.uploader.upload(file.tempFilePath, options);
-        
-        console.log("✅ Cloudinary Upload Success:", uploadResponse.secure_url);
-        return uploadResponse;
+      const result = await cloudinary.uploader.upload(file.tempFilePath, options);
+      console.log("✅ Cloudinary Upload Success:", result.secure_url);
+      return result;
     } catch (error) {
-        console.error("❌ Error uploading to Cloudinary:", error.message);
-        throw error;
+      console.error("❌ Cloudinary upload error:", error);
+      throw error;
     }
-};
+  };

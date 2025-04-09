@@ -8,21 +8,19 @@ const mongoose = require("mongoose")
 const { convertSecondsToDuration } = require("../utils/secToDuration")
 
 exports.updateProfile = async (req, res) => {
-  console.log("req.user",req.body);
   try {
-    // Check if req.user exists
-    console.log("req.user",req.body);
+    // Check if req.user exists (set by auth middleware)
     if (!req.user) {
       console.log("req.user is undefined");
       return res.status(401).json({ success: false, message: "Unauthorized access" });
     }
-     
+
     const userId = req.user.id;
     const { firstName, lastName, dateOfBirth, about, contactNumber, gender } = req.body;
 
     console.log("User ID from token:", userId);
 
-    // Find user and associated profile additionalDetails
+    // Find user with populated profile
     const user = await User.findById(userId).populate("additionalDetails");
 
     if (!user) {
@@ -30,9 +28,8 @@ exports.updateProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
+    // If no profile exists, create one
     let profile = user.additionalDetails;
-
-    // If profile doesn't exist, create one
     if (!profile) {
       profile = await Profile.create({
         gender: "",
@@ -44,30 +41,33 @@ exports.updateProfile = async (req, res) => {
       await user.save();
     }
 
-    // Update user and profile details
+    // Update User fields
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
-
     await user.save();
 
+    // Update Profile fields
     if (dateOfBirth) profile.dateOfBirth = new Date(dateOfBirth);
     if (about) profile.about = about;
     if (contactNumber) profile.contactNumber = contactNumber;
     if (gender) profile.gender = gender;
-
     await profile.save();
 
-    // Fetch updated user details
-    const updatedUserDetails = await User.findById(userId).populate("additionalDetails");
+    // Return updated data
+    const updatedUser = await User.findById(userId).populate("additionalDetails");
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      updatedUserDetails,
+      updatedUserDetails: updatedUser,
     });
+
   } catch (error) {
     console.error("Error updating profile:", error.message);
-    return res.status(500).json({ success: false, message: "Error updating profile" });
+    return res.status(500).json({
+      success: false,
+      message: "Error updating profile",
+    });
   }
 };
 

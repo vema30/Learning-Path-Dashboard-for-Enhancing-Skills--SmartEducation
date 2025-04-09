@@ -10,256 +10,227 @@ import Footer from "../../components/common/Footer"
 import RatingStars from "../../components/common/RatingStars"
 import CourseAccordionBar from "../../components/core/Course/CourseAccordionBar"
 import CourseDetailsCard from "../../components/core/Course/CourseDetailsCard"
+
 import { formatDate } from "../../services/formatDate"
 import { fetchCourseDetails } from "../../services/operations/courseDetailsAPI"
 import { BuyCourse } from "../../services/operations/studentFeaturesAPI"
+import { getUserDetails } from "../../services/operations/profileAPI"
 import GetAvgRating from "../../utils/avgRating"
-import Error from "./Error"
 
 function CourseDetails() {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const { courseId } = useParams()
+
   const { user } = useSelector((state) => state.profile)
   const { token } = useSelector((state) => state.auth)
   const { loading } = useSelector((state) => state.profile)
   const { paymentLoading } = useSelector((state) => state.course)
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
 
-  // Getting courseId from url parameter
-  const { courseId } = useParams()
-  // console.log(`course id: ${courseId}`)
-
-  // Declear a state to save the course details
-  const [response, setResponse] = useState(null)
+  const [courseData, setCourseData] = useState(null)
+  const [instructorImage, setInstructorImage] = useState(null)
   const [confirmationModal, setConfirmationModal] = useState(null)
+  const [avgReviewCount, setAvgReviewCount] = useState(0)
+  const [totalNoOfLectures, setTotalNoOfLectures] = useState(0)
+  const [isActive, setIsActive] = useState([])
+
+  // Fetch course details
   useEffect(() => {
-    // Calling fetchCourseDetails fucntion to fetch the details
-    ;(async () => {
+    const getCourseDetails = async () => {
       try {
         const res = await fetchCourseDetails(courseId)
-        // console.log("course details res: ", res)
-        setResponse(res)
-      } catch (error) {
-        console.log("Could not fetch Course Details")
+        const data = res.data
+
+        setCourseData(data)
+        setAvgReviewCount(GetAvgRating(data.ratingAndReview || []))
+
+        const totalLectures = data.sections?.reduce(
+          (acc, sec) => acc + (sec.subSection?.length || 0),
+          0
+        )
+        setTotalNoOfLectures(totalLectures)
+      } catch (err) {
+        console.error("Error fetching course:", err)
       }
-    })()
+    }
+
+    getCourseDetails()
   }, [courseId])
 
-  // console.log("response: ", response)
-
-  // Calculating Avg Review count
-  const [avgReviewCount, setAvgReviewCount] = useState(0)
+  // Fetch instructor image
   useEffect(() => {
-    const count = GetAvgRating(response?.data?.courseDetails.ratingAndReviews)
-    setAvgReviewCount(count)
-  }, [response])
-  // console.log("avgReviewCount: ", avgReviewCount)
+    const fetchInstructorImage = async () => {
+      if (courseData?.instructor?._id) {
+        try {
+          const res = await getUserDetails(courseData.instructor._id)
+          setInstructorImage(res?.data?.image)
+        } catch (error) {
+          console.error("Failed to fetch instructor image", error)
+        }
+      }
+    }
 
-  // // Collapse all
-  // const [collapse, setCollapse] = useState("")
-  const [isActive, setIsActive] = useState(Array(0))
+    fetchInstructorImage()
+  }, [courseData])
+
+  // Handle course purchase
+  const handleBuyCourse = () => {
+    if (token) {
+      BuyCourse(token, [courseId], user, navigate, dispatch)
+    } else {
+      setConfirmationModal({
+        text1: "You are not logged in!",
+        text2: "Please login to purchase the course.",
+        btn1Text: "Login",
+        btn2Text: "Cancel",
+        btn1Handler: () => navigate("/login"),
+        btn2Handler: () => setConfirmationModal(null),
+      })
+    }
+  }
+
   const handleActive = (id) => {
-    // console.log("called", id)
-    setIsActive(
-      !isActive.includes(id)
-        ? isActive.concat([id])
-        : isActive.filter((e) => e != id)
+    setIsActive((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     )
   }
 
-  // Total number of lectures
-  const [totalNoOfLectures, setTotalNoOfLectures] = useState(0)
-  useEffect(() => {
-    let lectures = 0
-    response?.data?.courseDetails?.courseContent?.forEach((sec) => {
-      lectures += sec.subSection.length || 0
-    })
-    setTotalNoOfLectures(lectures)
-  }, [response])
-
-  if (loading || !response) {
+  if (loading || !courseData) {
     return (
       <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
         <div className="spinner"></div>
       </div>
     )
   }
-  if (!response.success) {
-    return <Error />
-  }
 
   const {
-    _id: course_id,
     courseName,
     courseDescription,
     thumbnail,
     price,
     whatYouWillLearn,
-    courseContent,
-    ratingAndReviews,
+    sections,
+    ratingAndReview = [],
     instructor,
-    studentsEnroled,
+    studentsEnrolled = [],
     createdAt,
-  } = response.data?.courseDetails
-
-  const handleBuyCourse = () => {
-    if (token) {
-      BuyCourse(token, [courseId], user, navigate, dispatch)
-      return
-    }
-    setConfirmationModal({
-      text1: "You are not logged in!",
-      text2: "Please login to Purchase Course.",
-      btn1Text: "Login",
-      btn2Text: "Cancel",
-      btn1Handler: () => navigate("/login"),
-      btn2Handler: () => setConfirmationModal(null),
-    })
-  }
-
-  if (paymentLoading) {
-    // console.log("payment loading")
-    return (
-      <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
-        <div className="spinner"></div>
-      </div>
-    )
-  }
+  } = courseData
 
   return (
     <>
-      <div className={`relative w-full bg-richblack-800`}>
-        {/* Hero Section */}
-        <div className="mx-auto box-content px-4 lg:w-[1260px] 2xl:relative ">
-          <div className="mx-auto grid min-h-[450px] max-w-maxContentTab justify-items-center py-8 lg:mx-0 lg:justify-items-start lg:py-0 xl:max-w-[810px]">
+      {/* Header Section */}
+      <div className="w-full bg-richblack-800">
+        <div className="mx-auto px-4 lg:w-[1260px]">
+          <div className="grid min-h-[450px] max-w-maxContentTab justify-items-center py-8 lg:justify-items-start xl:max-w-[810px]">
+            {/* Mobile Thumbnail */}
             <div className="relative block max-h-[30rem] lg:hidden">
-              <div className="absolute bottom-0 left-0 h-full w-full shadow-[#161D29_0px_-64px_36px_-28px_inset]"></div>
-              <img
-                src={thumbnail}
-                alt="course thumbnail"
-                className="aspect-auto w-full"
-              />
+              <img src={thumbnail} alt="course thumbnail" className="w-full aspect-auto" />
             </div>
-            <div
-              className={`z-30 my-5 flex flex-col justify-center gap-4 py-5 text-lg text-richblack-5`}
-            >
-              <div>
-                <p className="text-4xl font-bold text-richblack-5 sm:text-[42px]">
-                  {courseName}
-                </p>
-              </div>
-              <p className={`text-richblack-200`}>{courseDescription}</p>
-              <div className="text-md flex flex-wrap items-center gap-2">
+
+            {/* Course Info */}
+            <div className="z-30 flex flex-col gap-4 py-5 text-lg text-richblack-5">
+              <h1 className="text-4xl font-bold">{courseName}</h1>
+              <p className="text-richblack-200">{courseDescription}</p>
+
+              <div className="flex flex-wrap items-center gap-2 text-md">
                 <span className="text-yellow-25">{avgReviewCount}</span>
                 <RatingStars Review_Count={avgReviewCount} Star_Size={24} />
-                <span>{`(${ratingAndReviews.length} reviews)`}</span>
-                <span>{`${studentsEnroled.length} students enrolled`}</span>
+                <span>{`(${ratingAndReview.length} reviews)`}</span>
+                <span>{`${studentsEnrolled.length} students enrolled`}</span>
               </div>
-              <div>
-                <p className="">
-                  Created By {`${instructor.firstName} ${instructor.lastName}`}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-5 text-lg">
+
+              <p>Created by {`${instructor.firstName} ${instructor.lastName}`}</p>
+
+              <div className="flex flex-wrap gap-5">
                 <p className="flex items-center gap-2">
-                  {" "}
                   <BiInfoCircle /> Created at {formatDate(createdAt)}
                 </p>
                 <p className="flex items-center gap-2">
-                  {" "}
                   <HiOutlineGlobeAlt /> English
                 </p>
               </div>
             </div>
-            <div className="flex w-full flex-col gap-4 border-y border-y-richblack-500 py-4 lg:hidden">
-              <p className="space-x-3 pb-4 text-3xl font-semibold text-richblack-5">
-                Rs. {price}
-              </p>
-              <button className="yellowButton" onClick={handleBuyCourse}>
-                Buy Now
-              </button>
+
+            {/* Mobile Buttons */}
+            <div className="flex w-full flex-col gap-4 border-y py-4 lg:hidden">
+              <p className="pb-4 text-3xl font-semibold">Rs. {price}</p>
+              <button className="yellowButton" onClick={handleBuyCourse}>Buy Now</button>
               <button className="blackButton">Add to Cart</button>
             </div>
           </div>
-          {/* Courses Card */}
-          <div className="right-[1rem] top-[60px] mx-auto hidden min-h-[600px] w-1/3 max-w-[410px] translate-y-24 md:translate-y-0 lg:absolute  lg:block">
+
+          {/* Desktop Course Card */}
+          <div className="right-[1rem] top-[60px] mx-auto hidden w-1/3 max-w-[410px] lg:absolute lg:block">
             <CourseDetailsCard
-              course={response?.data?.courseDetails}
-              setConfirmationModal={setConfirmationModal}
+              course={courseData}
               handleBuyCourse={handleBuyCourse}
+              setConfirmationModal={setConfirmationModal}
             />
           </div>
         </div>
       </div>
-      <div className="mx-auto box-content px-4 text-start text-richblack-5 lg:w-[1260px]">
-        <div className="mx-auto max-w-maxContentTab lg:mx-0 xl:max-w-[810px]">
-          {/* What will you learn section */}
-          <div className="my-8 border border-richblack-600 p-8">
-            <p className="text-3xl font-semibold">What you'll learn</p>
+
+      {/* Course Body */}
+      <div className="mx-auto px-4 text-richblack-5 lg:w-[1260px]">
+        <div className="mx-auto xl:max-w-[810px]">
+          {/* What You'll Learn */}
+          <div className="my-8 border p-8">
+            <h2 className="text-3xl font-semibold">What you'll learn</h2>
             <div className="mt-5">
               <ReactMarkdown>{whatYouWillLearn}</ReactMarkdown>
             </div>
           </div>
 
-          {/* Course Content Section */}
-          <div className="max-w-[830px] ">
+          {/* Course Content */}
+          <div className="max-w-[830px]">
             <div className="flex flex-col gap-3">
-              <p className="text-[28px] font-semibold">Course Content</p>
+              <h3 className="text-[28px] font-semibold">Course Content</h3>
               <div className="flex flex-wrap justify-between gap-2">
                 <div className="flex gap-2">
-                  <span>
-                    {courseContent.length} {`section(s)`}
-                  </span>
-                  <span>
-                    {totalNoOfLectures} {`lecture(s)`}
-                  </span>
-                  <span>{response.data?.totalDuration} total length</span>
+                  <span>{sections.length} section(s)</span>
+                  <span>{totalNoOfLectures} lecture(s)</span>
                 </div>
-                <div>
-                  <button
-                    className="text-yellow-25"
-                    onClick={() => setIsActive([])}
-                  >
-                    Collapse all sections
-                  </button>
-                </div>
+                <button className="text-yellow-25" onClick={() => setIsActive([])}>
+                  Collapse all
+                </button>
               </div>
             </div>
 
-            {/* Course Details Accordion */}
             <div className="py-4">
-              {courseContent?.map((course, index) => (
+              {sections.map((sec, idx) => (
                 <CourseAccordionBar
-                  course={course}
-                  key={index}
+                  key={idx}
+                  course={sec}
                   isActive={isActive}
                   handleActive={handleActive}
                 />
               ))}
             </div>
+          </div>
 
-            {/* Author Details */}
-            <div className="mb-12 py-4">
-              <p className="text-[28px] font-semibold">Author</p>
-              <div className="flex items-center gap-4 py-4">
-                <img
-                  src={
-                    instructor.image
-                      ? instructor.image
-                      : `https://api.dicebear.com/5.x/initials/svg?seed=${instructor.firstName} ${instructor.lastName}`
-                  }
-                  alt="Author"
-                  className="h-14 w-14 rounded-full object-cover"
-                />
-                <p className="text-lg">{`${instructor.firstName} ${instructor.lastName}`}</p>
-              </div>
-              <p className="text-richblack-50">
-                {instructor?.additionalDetails?.about}
-              </p>
+          {/* Author Section */}
+          <div className="mb-12 py-4">
+            <h3 className="text-[28px] font-semibold">Author</h3>
+            <div className="flex items-center gap-4 py-4">
+              <img
+                src={
+                  instructorImage ||
+                  `https://api.dicebear.com/5.x/initials/svg?seed=${instructor.firstName} ${instructor.lastName}`
+                }
+                alt="Author"
+                className="h-14 w-14 rounded-full object-cover"
+              />
+              <p className="text-lg">{`${instructor.firstName} ${instructor.lastName}`}</p>
             </div>
+            <p className="text-richblack-50">
+              {instructor?.additionalDetails?.about || "No bio available"}
+            </p>
           </div>
         </div>
       </div>
+
       <Footer />
+
       {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </>
   )

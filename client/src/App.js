@@ -17,7 +17,8 @@ import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
 import Settings from "./components/core/Dashboard/Settings/index";
 import AddCourse from "./components/core/Dashboard/AddCourse/index";
 import PrivateRoute from "./components/core/Auth/PrivateRoute";
-import CourseDetailPage from "./components/pages/CourseDetailPage";
+import CreateCategory from './components/core/Dashboard/CreateCategory'
+//import CourseDetailPage from "./components/pages/CourseDetailPage";
 import CourseDetails from "./components/pages/CourseDetails";
 //import CourseBuilderForm from "./components/core/Dashboard/AddCourse/CourseBuilder/CourseBuilderForm";
 import MyCourses from './components/core/Dashboard/MyCourses'
@@ -26,6 +27,7 @@ const App = () => {
   return (
     <div className="flex flex-col w-screen min-h-screen bg-richblue-900 text-white justify-between">
       <Navbar />
+     
 
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -52,12 +54,13 @@ const App = () => {
           <Route path="cart" element={<Cart />} />
           <Route path="settings" element={<Settings />} />
           
+          <Route path="create-category" element={<CreateCategory/>} />
           <Route path="my-courses" element={<MyCourses/>} />
           <Route path="add-course" element={<AddCourse />} />
           <Route path="enrolled-courses" element={<EnrolledCourses />} />
         </Route>
       </Routes>
-
+       
       <Footer />
     </div>
   );

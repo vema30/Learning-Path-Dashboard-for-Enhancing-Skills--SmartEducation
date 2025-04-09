@@ -105,10 +105,10 @@ const signUp = async (req, res) => {
 
         // Create Profile with Error Handling
         const profileDetails = await Profile.create({
-            gender: "ADD your gender",
-            dateOfBirth: new Date("1-1-1111"),
-            about: "ADD ABOUT ",
-            contactNumber: "5555555555"
+            gender: "",
+            dateOfBirth: undefined,
+            about: " ",
+            contactNumber: ""
         });
 
         if (!profileDetails) {

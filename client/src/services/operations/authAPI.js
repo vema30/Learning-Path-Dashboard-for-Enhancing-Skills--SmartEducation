@@ -114,7 +114,9 @@ export function login(email, password, navigate) {
 
       const token = response.data.token;
       
-
+         console.log("Token:", token);
+      console.log("User Image:", userImage);
+      console.log("User Data:", response.data.user);
       dispatch(setToken(token));
       dispatch(setUser({ ...response.data.user, image: userImage }));
 

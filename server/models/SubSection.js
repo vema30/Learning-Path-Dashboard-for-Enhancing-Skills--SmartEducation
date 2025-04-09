@@ -9,7 +9,7 @@ const SubSectionSchema = new Schema({
   },
   timeDuration: {
     type: String, 
-    required: true
+    
   },
   description: {
     type: String,

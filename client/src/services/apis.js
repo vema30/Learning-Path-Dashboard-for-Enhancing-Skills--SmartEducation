@@ -22,6 +22,10 @@ export const studentEndpoints = {
   COURSE_VERIFY_API: BASE_URL + "/payment/verifyPayment",
   SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail",
 }
+export const categoriesEndpoints = {
+  CREATE_CATEGORY_API: "http://localhost:4000/api/v1/course/categories",
+};
+
 
 // COURSE ENDPOINTS
 export const courseEndpoints = {
@@ -38,7 +42,9 @@ export const courseEndpoints = {
   GET_ALL_INSTRUCTOR_COURSES_API: BASE_URL + "/course/getInstructorCourses",
   DELETE_SECTION_API: BASE_URL + "/course/sections/:sectionId",
   DELETE_SUBSECTION_API: BASE_URL + "/course/deleteSubSection",
-  DELETE_COURSE_API: BASE_URL + "/course/deleteCourse",
+   // Pass the courseId dynamically when calling this API
+DELETE_COURSE_API: (courseId) => BASE_URL + `/course/courses/${courseId}`,
+
   GET_FULL_COURSE_DETAILS_AUTHENTICATED:
     BASE_URL + "/course/getFullCourseDetails",
   LECTURE_COMPLETION_API: BASE_URL + "/course/updateCourseProgress",

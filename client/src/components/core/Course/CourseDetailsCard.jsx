@@ -9,13 +9,6 @@ import { useNavigate } from "react-router-dom"
 import { addToCart } from "../../../slices/cartSlice"
 import { ACCOUNT_TYPE } from "../../../utils/constants"
 
-// const CourseIncludes = [
-//   "8 hours on-demand video",
-//   "Full Lifetime access",
-//   "Access on Mobile and TV",
-//   "Certificate of completion",
-// ]
-
 function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
   const { user } = useSelector((state) => state.profile)
   const { token } = useSelector((state) => state.auth)
@@ -52,75 +45,71 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
     })
   }
 
-  // console.log("Student already enrolled ", course?.studentsEnroled, user?._id)
+  const isStudentEnrolled = (course?.studentsEnrolled || []).includes(user?._id)
 
   return (
-    <>
-      <div
-        className={`flex flex-col gap-4 rounded-md bg-richblack-700 p-4 text-richblack-5`}
-      >
-        {/* Course Image */}
-        <img
-          src={ThumbnailImage}
-          alt={course?.courseName}
-          className="max-h-[300px] min-h-[180px] w-[400px] overflow-hidden rounded-2xl object-cover md:max-w-full"
-        />
+    <div className="flex flex-col gap-6 rounded-xl bg-richblack-700 p-5 text-richblack-5 shadow-lg max-w-md w-full mx-auto">
+      {/* Thumbnail */}
+      <img
+        src={ThumbnailImage}
+        alt={course?.courseName}
+        className="h-[250px] w-full rounded-xl object-cover"
+      />
 
-        <div className="px-4">
-          <div className="space-x-3 pb-4 text-3xl font-semibold">
-            Rs. {CurrentPrice}
-          </div>
-          <div className="flex flex-col gap-4">
-            <button
-              className="yellowButton"
-              onClick={
-                user && course?.studentsEnroled.includes(user?._id)
-                  ? () => navigate("/dashboard/enrolled-courses")
-                  : handleBuyCourse
-              }
-            >
-              {user && course?.studentsEnroled.includes(user?._id)
-                ? "Go To Course"
-                : "Buy Now"}
-            </button>
-            {(!user || !course?.studentsEnroled.includes(user?._id)) && (
-              <button onClick={handleAddToCart} className="blackButton">
-                Add to Cart
-              </button>
-            )}
-          </div>
-          <div>
-            <p className="pb-3 pt-6 text-center text-sm text-richblack-25">
-              30-Day Money-Back Guarantee
-            </p>
-          </div>
+      {/* Price */}
+      <div className="text-3xl font-bold text-richblack-5">₹{CurrentPrice}</div>
 
-          <div className={``}>
-            <p className={`my-2 text-xl font-semibold `}>
-              This Course Includes :
-            </p>
-            <div className="flex flex-col gap-3 text-sm text-caribbeangreen-100">
-              {course?.instructions?.map((item, i) => {
-                return (
-                  <p className={`flex gap-2`} key={i}>
-                    <BsFillCaretRightFill />
-                    <span>{item}</span>
-                  </p>
-                )
-              })}
+      {/* Buttons */}
+      <div className="flex flex-col gap-4">
+        <button
+          className="w-full rounded-md bg-yellow-400 py-2 font-semibold text-richblack-900 hover:bg-yellow-300 transition duration-200"
+          onClick={
+            user && isStudentEnrolled
+              ? () => navigate("/dashboard/enrolled-courses")
+              : handleBuyCourse
+          }
+        >
+          {user && isStudentEnrolled ? "Go To Course" : "Buy Now"}
+        </button>
+
+        {(!user || !isStudentEnrolled) && (
+          <button
+            onClick={handleAddToCart}
+            className="w-full rounded-md border border-richblack-600 bg-richblack-800 py-2 font-semibold text-white hover:bg-richblack-600 transition duration-200"
+          >
+            Add to Cart
+          </button>
+        )}
+      </div>
+
+      {/* Guarantee */}
+      <p className="text-center text-sm text-richblack-200">
+        30-Day Money-Back Guarantee
+      </p>
+
+      {/* Course Includes */}
+      <div>
+        <p className="text-lg font-semibold text-richblack-5 mb-2">This Course Includes:</p>
+        <div className="flex flex-col gap-2 text-sm text-caribbeangreen-100">
+          {(course?.instructions || []).map((item, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <BsFillCaretRightFill className="mt-[2px]" />
+              <span>{item}</span>
             </div>
-          </div>
-          <div className="text-center">
-            <button
-              className="mx-auto flex items-center gap-2 py-6 text-yellow-100 "
-              onClick={handleShare}
-            >
-              <FaShareSquare size={15} /> Share
-            </button>
-          </div>
+          ))}
         </div>
       </div>
-    </>
+
+      {/* Share Button */}
+      <div className="text-center">
+        <button
+          className="flex items-center justify-center gap-2 text-yellow-100 hover:text-yellow-200 transition"
+          onClick={handleShare}
+        >
+          <FaShareSquare size={16} /> Share
+        </button>
+      </div>
+    </div>
   )
 }
 

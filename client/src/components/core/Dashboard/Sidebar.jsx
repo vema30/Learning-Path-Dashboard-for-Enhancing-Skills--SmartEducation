@@ -9,19 +9,18 @@ import ConfirmationModal from "../../common/ConfirmationModal"
 import SidebarLink from "./SidebarLink"
 
 export default function Sidebar() {
-  const handleLogout = () => {
-    dispatch(logout()); // Perform the logout action
-    navigate("/"); // Navigate to the home or login page after logging out
-  };
-
-  const { user, loading: profileLoading } = useSelector(
-    (state) => state.profile
-  )
-  const { loading: authLoading } = useSelector((state) => state.auth)
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  // to keep track of confirmation modal
+
+  const { user, loading: profileLoading } = useSelector((state) => state.profile)
+  const { loading: authLoading } = useSelector((state) => state.auth)
+
   const [confirmationModal, setConfirmationModal] = useState(null)
+
+  const handleLogout = () => {
+    dispatch(logout())
+    navigate("/")
+  }
 
   if (profileLoading || authLoading) {
     return (
@@ -41,8 +40,19 @@ export default function Sidebar() {
               <SidebarLink key={link.id} link={link} iconName={link.icon} />
             )
           })}
+
+          {/* Show Create Category only for Admins */}
+          {user?.accountType === "Admin" && (
+            <SidebarLink
+             
+              link={{ name: "Create Category", path: "/dashboard/create-category" }}
+              iconName="VscAdd" // You can change this to a different icon if needed
+            />
+          )}
         </div>
+
         <div className="mx-auto mt-6 mb-6 h-[1px] w-10/12 bg-richblack-700" />
+
         <div className="flex flex-col">
           <SidebarLink
             link={{ name: "Settings", path: "/dashboard/settings" }}
@@ -50,7 +60,6 @@ export default function Sidebar() {
           />
           <button
             onClick={() =>
-             
               setConfirmationModal({
                 text1: "Are you sure?",
                 text2: "You will be logged out of your account.",
@@ -69,6 +78,7 @@ export default function Sidebar() {
           </button>
         </div>
       </div>
+
       {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </>
   )

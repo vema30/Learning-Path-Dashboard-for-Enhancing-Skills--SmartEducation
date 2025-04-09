@@ -1,16 +1,22 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+
 const ProfileSchema = new Schema(
   {
     gender: {
       type: String,
-     // enum: ["Male", "Female", "Other", "Prefer not to say"],
       required: false,
     },
     dateOfBirth: {
-      type: Date, // Use Date type for consistent date handling
+      type: Date,
       required: false,
+      validate: {
+        validator: function (value) {
+          return value <= new Date();
+        },
+        message: "Date of birth cannot be in the future",
+      },
     },
     about: {
       type: String,
@@ -20,13 +26,12 @@ const ProfileSchema = new Schema(
     contactNumber: {
       type: String,
       trim: true,
-      match: [/^\+?\d{10,15}$/, "Please enter a valid contact number"], // Support for optional "+" for country codes
+      match: [/^\+?\d{10,15}$/, "Contact number must be 10 to 15 digits, optionally starting with '+'"],
       required: false,
     },
   },
-  { timestamps: true } // createdAt and updatedAt timestamps
+  { timestamps: true }
 );
 
-// Compile model from schema
 const Profile = mongoose.model("Profile", ProfileSchema);
 module.exports = Profile;

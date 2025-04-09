@@ -15,5 +15,7 @@ const dataBaseConnection = async () => {
     process.exit(1);
   }
 };
+mongoose.set('strictPopulate', false);
+
 
 module.exports = dataBaseConnection;

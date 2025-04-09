@@ -169,77 +169,82 @@ const showAllCourses = async (req, res) => {
 // Controller to fetch specific course details
 const getCourseDetails = async (req, res) => {
     try {
-        const { courseId } = req.body;
-
-        const courseDetails = await Course.findById(courseId)
-            .populate("instructor", "firstName lastName email")
-            .populate("category", "name description")
-            .populate("ratingAndreviews")
-            .populate({
-                path: "courseContent",
-                populate: {
-                    path: "subSection"
-                }
-            })
-            .exec();
-
-        if (!courseDetails) {
-            return res.status(404).json({
-                success: false,
-                message: `Course not found with ID ${courseId}`,
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Course details fetched successfully",
-            data: courseDetails,
+      const courseId = req.params.courseId;
+  
+      const courseDetails = await Course.findOne({ _id: courseId })
+        .populate("instructor", "firstName lastName email")
+        .populate("Category", "name description")
+        .populate("ratingAndReview")
+        .populate({
+          path: "sections",
+          populate: {
+            path: "subSections", // ✅ corrected
+          },
+        })
+        .exec();
+  
+      if (!courseDetails) {
+        return res.status(404).json({
+          success: false,
+          message: `Course not found with ID ${courseId}`,
         });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        message: "Course details fetched successfully",
+        data: courseDetails,
+      });
     } catch (e) {
-        return res.status(500).json({
-            success: false,
-            message: "Error fetching course details",
-        });
+      console.log("e", e.message);
+      return res.status(500).json({
+        success: false,
+        message: "Error fetching course details",
+      });
     }
-};
+  };
+  
 
-// Controller to get full course details, including instructor, course content, and reviews
 const getFullCourseDetails = async (req, res) => {
     try {
-        const { courseId } = req.body;
-
-        const courseDetails = await Course.findById(courseId)
-            .populate("instructor", "firstName lastName email")
-            .populate("category", "name description")
-            .populate("ratingAndreviews")
-            .populate({
-                path: "courseContent",
-                populate: {
-                    path: "subSection"
-                }
-            })
-            .exec();
-
-        if (!courseDetails) {
-            return res.status(404).json({
-                success: false,
-                message: `Course not found with ID ${courseId}`,
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Full course details fetched successfully",
-            data: courseDetails,
+      const { courseId } = req.params; // Use req.params if you're calling this via route /courses/:courseId
+  
+      const courseDetails = await Course.findById(courseId)
+        .populate("instructor", "firstName lastName email")
+        .populate("Category", "name description")
+        .populate("ratingAndReview")
+        .populate({
+            path: "sections",
+            populate: {
+              path: "subSections", // ✅ correct
+              model: "SubSection"
+            }
+          })
+          
+        .exec();
+  
+      if (!courseDetails) {
+        return res.status(404).json({
+          success: false,
+          message: `Course not found with ID ${courseId}`,
         });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        message: "Full course details fetched successfully",
+        data: courseDetails,
+      });
     } catch (e) {
-        return res.status(500).json({
-            success: false,
-            message: "Error fetching full course details",
-        });
+      console.error("Error:", e);
+      return res.status(500).json({
+        success: false,
+        message: "Error fetching full course details",
+      });
     }
-};
-
+  };
+  
+  
 // Controller to edit course details
 const editCourse = async (req, res) => {
  console.log("hereee haree rammaaa")
@@ -333,40 +338,76 @@ const getInstructorCourses = async (req, res) => {
 
 // Controller to delete a course
 const deleteCourse = async (req, res) => {
-    try {
-        const { courseId } = req.body;
+  try {
+    const { courseId } = req.params;
+    console.log("🔍 Course ID:", courseId);
 
-        const course = await Course.findById(courseId);
-        if (!course) {
-            return res.status(404).json({
-                success: false,
-                message: "Course not found",
+    const course = await Course.findById(courseId);
+    if (!course) {
+      console.log("❌ Course not found");
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
+
+    console.log("✅ Course found:", course.courseName);
+
+    // Delete Sections & SubSections
+    for (const sectionId of course.courseContent || []) {
+      console.log("🧹 Deleting Section:", sectionId);
+      const section = await Section.findById(sectionId);
+
+      if (section) {
+        for (const subId of section.subSections || []) {
+          const subSection = await SubSection.findById(subId);
+          console.log("📹 SubSection:", subId, "Video:", subSection?.video?.public_id);
+
+          if (subSection?.video?.public_id) {
+            await cloudinary.uploader.destroy(subSection.video.public_id, {
+              resource_type: "video",
             });
+            console.log("✅ Deleted video from Cloudinary:", subSection.video.public_id);
+          }
         }
 
-        await Course.findByIdAndDelete(courseId);
-
-        // Remove the course from the instructor's list
-        await User.findByIdAndUpdate(course.instructor, {
-            $pull: { courses: courseId },
-        });
-
-        // Remove the course from the category's list
-        await Category.findByIdAndUpdate(course.category, {
-            $pull: { courses: courseId },
-        });
-
-        return res.status(200).json({
-            success: true,
-            message: "Course deleted successfully",
-        });
-    } catch (e) {
-        return res.status(500).json({
-            success: false,
-            message: e.message,
-        });
+        await SubSection.deleteMany({ _id: { $in: section.subSections } });
+        await Section.findByIdAndDelete(sectionId);
+        console.log("🧽 Deleted section and its subsections");
+      }
     }
+
+    // Delete thumbnail
+    if (course.thumbnail?.public_id) {
+      console.log("course.thumbnail?.public_id)",course.thumbnail?.public_id);
+      await cloudinary.uploader.destroy(course.thumbnail.public_id, {
+        resource_type: "image",
+      });
+      console.log("🖼️ Deleted course thumbnail from Cloudinary");
+    }
+
+    // Delete course
+    await Course.findByIdAndDelete(courseId);
+    console.log("🗑️ Course deleted from DB");
+
+    await User.findByIdAndUpdate(course.instructor, {
+      $pull: { courses: courseId },
+    });
+
+    await Category.findByIdAndUpdate(course.category, {
+      $pull: { courses: courseId },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Course and associated data deleted successfully",
+    });
+  } catch (e) {
+    console.error("❌ Error deleting course:", e);
+    return res.status(500).json({
+      success: false,
+      message: e.message || "Server error while deleting course",
+    });
+  }
 };
+
 
 module.exports = {
     createCourse,

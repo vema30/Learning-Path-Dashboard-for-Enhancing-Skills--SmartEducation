@@ -6,7 +6,8 @@ const Category = require("../models/Category"); // Assuming Category is the mode
 exports.createCategory = async (req, res) => {
     try {
         const { name, description } = req.body;
-
+   console.log("name", name);
+        console.log("description", description);
         // Validate input
         if (!name || !description) {
             return res.status(400).json({

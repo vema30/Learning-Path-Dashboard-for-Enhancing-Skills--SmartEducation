@@ -88,14 +88,18 @@ export function updateProfile(token, formData) {
         : `https://api.dicebear.com/5.x/initials/svg?seed=${response.data.updatedUserDetails.firstName} ${response.data.updatedUserDetails.lastName}`;
 
       // Dispatch the updated user to the store
-      dispatch(setUser({
-        ...response.data.data,
-        image: userImage,
-        phoneNumber: response.data.data.phoneNumber, // Ensure phoneNumber is updated
-        bio: response.data.data.bio, // Ensure bio is updated
-        dateOfBirth: response.data.data.dateOfBirth // Ensure dateOfBirth is updated
-      }));
+      console.log("hey");
+      const updatedUser = response.data.updatedUserDetails;
 
+dispatch(setUser({
+  ...updatedUser,
+  image: userImage,
+  contactNumber: updatedUser.additionalDetails?.contactNumber || "", // safely access nested fields
+  bio: updatedUser.additionalDetails?.about || "",
+  dateOfBirth: updatedUser.additionalDetails?.dateOfBirth || "",
+}));
+
+      
       toast.success("Profile Updated Successfully!");
     } catch (error) {
       console.error("Error Updating Profile:", error);
