@@ -23,10 +23,13 @@ import CourseDetails from "./components/pages/CourseDetails";
 //import CourseBuilderForm from "./components/core/Dashboard/AddCourse/CourseBuilder/CourseBuilderForm";
 import MyCourses from './components/core/Dashboard/MyCourses'
 import Catalog from "./components/pages/Catalog";
+import Recommendation from "./helper/Recommendation";
 const App = () => {
   return (
     <div className="flex flex-col w-screen min-h-screen bg-richblue-900 text-white justify-between">
       <Navbar />
+     { <Recommendation/>}
+     
      
 
       <Routes>

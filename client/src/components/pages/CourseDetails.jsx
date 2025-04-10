@@ -34,7 +34,6 @@ function CourseDetails() {
   const [totalNoOfLectures, setTotalNoOfLectures] = useState(0)
   const [isActive, setIsActive] = useState([])
 
-  // Fetch course details
   useEffect(() => {
     const getCourseDetails = async () => {
       try {
@@ -57,7 +56,6 @@ function CourseDetails() {
     getCourseDetails()
   }, [courseId])
 
-  // Fetch instructor image
   useEffect(() => {
     const fetchInstructorImage = async () => {
       if (courseData?.instructor?._id) {
@@ -73,7 +71,6 @@ function CourseDetails() {
     fetchInstructorImage()
   }, [courseData])
 
-  // Handle course purchase
   const handleBuyCourse = () => {
     if (token) {
       BuyCourse(token, [courseId], user, navigate, dispatch)
@@ -118,62 +115,63 @@ function CourseDetails() {
 
   return (
     <>
-      {/* Header Section */}
+      {/* HEADER + COURSE CARD */}
       <div className="w-full bg-richblack-800">
         <div className="mx-auto px-4 lg:w-[1260px]">
-          <div className="grid min-h-[450px] max-w-maxContentTab justify-items-center py-8 lg:justify-items-start xl:max-w-[810px]">
-            {/* Mobile Thumbnail */}
-            <div className="relative block max-h-[30rem] lg:hidden">
-              <img src={thumbnail} alt="course thumbnail" className="w-full aspect-auto" />
-            </div>
-
-            {/* Course Info */}
-            <div className="z-30 flex flex-col gap-4 py-5 text-lg text-richblack-5">
-              <h1 className="text-4xl font-bold">{courseName}</h1>
-              <p className="text-richblack-200">{courseDescription}</p>
-
-              <div className="flex flex-wrap items-center gap-2 text-md">
-                <span className="text-yellow-25">{avgReviewCount}</span>
-                <RatingStars Review_Count={avgReviewCount} Star_Size={24} />
-                <span>{`(${ratingAndReview.length} reviews)`}</span>
-                <span>{`${studentsEnrolled.length} students enrolled`}</span>
+          <div className="flex flex-col-reverse gap-10 py-8 lg:flex-row lg:items-start">
+            {/* LEFT: Course Info */}
+            <div className="flex-1">
+              <div className="relative block max-h-[30rem] lg:hidden">
+                <img src={thumbnail} alt="course thumbnail" className="w-full aspect-auto" />
               </div>
 
-              <p>Created by {`${instructor.firstName} ${instructor.lastName}`}</p>
+              <div className="z-30 flex flex-col gap-4 py-5 text-lg text-richblack-5">
+                <h1 className="text-4xl font-bold">{courseName}</h1>
+                <p className="text-richblack-200">{courseDescription}</p>
 
-              <div className="flex flex-wrap gap-5">
-                <p className="flex items-center gap-2">
-                  <BiInfoCircle /> Created at {formatDate(createdAt)}
-                </p>
-                <p className="flex items-center gap-2">
-                  <HiOutlineGlobeAlt /> English
-                </p>
+                <div className="flex flex-wrap items-center gap-2 text-md">
+                  <span className="text-yellow-25">{avgReviewCount}</span>
+                  <RatingStars Review_Count={avgReviewCount} Star_Size={24} />
+                  <span>{`(${ratingAndReview.length} reviews)`}</span>
+                  <span>{`${studentsEnrolled.length} students enrolled`}</span>
+                </div>
+
+                <p>Created by {`${instructor.firstName} ${instructor.lastName}`}</p>
+
+                <div className="flex flex-wrap gap-5">
+                  <p className="flex items-center gap-2">
+                    <BiInfoCircle /> Created at {formatDate(createdAt)}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <HiOutlineGlobeAlt /> English
+                  </p>
+                </div>
+              </div>
+
+              {/* Mobile Buttons */}
+              <div className="flex w-full flex-col gap-4 border-y py-4 lg:hidden">
+                <p className="pb-4 text-3xl font-semibold">Rs. {price}</p>
+                <button className="yellowButton" onClick={handleBuyCourse}>Buy Now</button>
+                <button className="blackButton">Add to Cart</button>
               </div>
             </div>
 
-            {/* Mobile Buttons */}
-            <div className="flex w-full flex-col gap-4 border-y py-4 lg:hidden">
-              <p className="pb-4 text-3xl font-semibold">Rs. {price}</p>
-              <button className="yellowButton" onClick={handleBuyCourse}>Buy Now</button>
-              <button className="blackButton">Add to Cart</button>
+            {/* RIGHT: CourseDetailsCard */}
+            <div className="hidden lg:block w-full max-w-[400px]">
+              <CourseDetailsCard
+                course={courseData}
+                handleBuyCourse={handleBuyCourse}
+                setConfirmationModal={setConfirmationModal}
+              />
             </div>
-          </div>
-
-          {/* Desktop Course Card */}
-          <div className="right-[1rem] top-[60px] mx-auto hidden w-1/3 max-w-[410px] lg:absolute lg:block">
-            <CourseDetailsCard
-              course={courseData}
-              handleBuyCourse={handleBuyCourse}
-              setConfirmationModal={setConfirmationModal}
-            />
           </div>
         </div>
       </div>
 
-      {/* Course Body */}
+      {/* COURSE BODY */}
       <div className="mx-auto px-4 text-richblack-5 lg:w-[1260px]">
         <div className="mx-auto xl:max-w-[810px]">
-          {/* What You'll Learn */}
+          {/* What you'll learn */}
           <div className="my-8 border p-8">
             <h2 className="text-3xl font-semibold">What you'll learn</h2>
             <div className="mt-5">
