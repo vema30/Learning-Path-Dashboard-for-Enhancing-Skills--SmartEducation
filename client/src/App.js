@@ -24,11 +24,12 @@ import CourseDetails from "./components/pages/CourseDetails";
 import MyCourses from './components/core/Dashboard/MyCourses'
 import Catalog from "./components/pages/Catalog";
 import Recommendation from "./helper/Recommendation";
+import VideoDetails from './components/core/ViewCourse/VideoDetails'
 const App = () => {
   return (
     <div className="flex flex-col w-screen min-h-screen bg-richblue-900 text-white justify-between">
       <Navbar />
-     { <Recommendation/>}
+     {/* { <Recommendation/>} */}
      
      
 
@@ -43,7 +44,10 @@ const App = () => {
         <Route path="/update-password/:token" element={<ResetPassword />} />
         <Route path="/catalog/:catalogName" element={<Catalog/>}/>
         <Route path="/courses/:courseId" element={<CourseDetails />} />
-
+        <Route
+          path="/view-course/:courseId/section/:sectionId/sub-section/:subSectionId"
+          element={<VideoDetails />}
+        />
         {/* Private Dashboard Route */}
         <Route
           path="/dashboard/*"
