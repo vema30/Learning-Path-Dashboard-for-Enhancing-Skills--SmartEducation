@@ -409,6 +409,98 @@ const deleteCourse = async (req, res) => {
 };
 
 
+// Controller to update user's course progress
+
+
+const updateCourseProgress = async (req, res) => {
+  const { courseId, subsectionId } = req.body;
+  console.log("course id, section ID", courseId, subsectionId);
+
+  const userId = req.user.id;  // Assuming user ID is available from authentication middleware
+
+  try {
+    // Fetch the course by ID and populate both 'sections' and 'sections.subSections'
+    const course = await Course.findById(courseId)
+      .populate({
+        path: 'sections',
+        populate: {
+          path: 'subSections'
+        }
+      });
+
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    // Validate if the sections and subSections exist
+    if (!course.sections || !Array.isArray(course.sections)) {
+      return res.status(400).json({ message: 'Course sections data is missing or malformed' });
+    }
+
+    // Try to find the section that contains the subsection
+    let subsectionFound = false;
+    const section = course.sections.find((sec) => {
+      // Check if the section contains subSections and if subsectionId is present in the subSections
+      if (Array.isArray(sec.subSections)) {
+        return sec.subSections.some((sub) => sub._id.toString() === subsectionId);
+      }
+      return false;  // No subSections found in this section
+    });
+
+    // If no section or subsection is found
+    if (!section) {
+      console.log("Section or Subsection not found");
+      return res.status(404).json({ message: 'Subsection not found in course' });
+    }
+
+    // Now, find the actual subsection inside the section
+    const subsection = section.subSections.find((sub) => sub._id.toString() === subsectionId);
+    if (!subsection) {
+      return res.status(404).json({ message: 'Subsection not found' });
+    }
+
+    // Fetch the user data and check if the subsection is already completed
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Ensure completedLectures is always an array
+    if (!user.completedLectures) {
+      user.completedLectures = [];
+    }
+
+    // Check if the lecture has already been marked as completed
+    if (user.completedLectures.includes(subsectionId)) {
+      return res.status(400).json({ message: 'Lecture already completed' });
+    }
+
+    // Add subsection to user's completed lectures
+    user.completedLectures.push(subsectionId);
+    await user.save();
+
+    // Optionally, update the course progress based on completed lectures
+    course.totalCompletedLectures = course.sections.reduce((acc, sec) => {
+      return acc + sec.subSections.filter((sub) =>
+        user.completedLectures.includes(sub._id.toString())
+      ).length;
+    }, 0);
+    await course.save();
+
+    return res.status(200).json({
+      message: 'Course progress updated successfully',
+      completedLectures: user.completedLectures,
+      totalCompletedLectures: course.totalCompletedLectures,
+    });
+
+  } catch (error) {
+    console.error('Error updating course progress:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
 module.exports = {
     createCourse,
     showAllCourses,
@@ -416,5 +508,6 @@ module.exports = {
     getFullCourseDetails,
     editCourse,
     getInstructorCourses,
-    deleteCourse
+    deleteCourse,
+    updateCourseProgress
 };

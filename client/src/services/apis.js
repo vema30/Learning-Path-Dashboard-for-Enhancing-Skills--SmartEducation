@@ -47,7 +47,7 @@ DELETE_COURSE_API: (courseId) => BASE_URL + `/course/courses/${courseId}`,
 
   GET_FULL_COURSE_DETAILS_AUTHENTICATED:
     BASE_URL + "/course/getFullCourseDetails",
-  LECTURE_COMPLETION_API: BASE_URL + "/course/updateCourseProgress",
+  LECTURE_COMPLETION_API: BASE_URL + "/course/course/updateCourseProgress",
   CREATE_RATING_API: BASE_URL + "/course/createRating",
 }
 

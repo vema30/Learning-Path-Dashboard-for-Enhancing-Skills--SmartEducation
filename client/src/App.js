@@ -23,13 +23,25 @@ import CourseDetails from "./components/pages/CourseDetails";
 //import CourseBuilderForm from "./components/core/Dashboard/AddCourse/CourseBuilder/CourseBuilderForm";
 import MyCourses from './components/core/Dashboard/MyCourses'
 import Catalog from "./components/pages/Catalog";
-import Recommendation from "./helper/Recommendation";
+// import Recommendation from "./helper/Recommendation";
 import VideoDetails from './components/core/ViewCourse/VideoDetails'
-const App = () => {
+import { getUserDetails } from "./services/operations/profileAPI";
+import { ACCOUNT_TYPE } from "./utils/constants"
+import { useDispatch, useSelector } from "react-redux"
+import { useNavigate } from "react-router-dom";
+import   Recommendation from './helper/Recommendation'
+const App = () => { 
+   const { user } = useSelector((state) => state.profile)
+   console.log("hi",user?.accountType, ACCOUNT_TYPE.STUDENT);
+
+
   return (
     <div className="flex flex-col w-screen min-h-screen bg-richblue-900 text-white justify-between">
+
       <Navbar />
-     {/* { <Recommendation/>} */}
+    
+      
+     { <Recommendation/>}
      
      
 
@@ -44,10 +56,15 @@ const App = () => {
         <Route path="/update-password/:token" element={<ResetPassword />} />
         <Route path="/catalog/:catalogName" element={<Catalog/>}/>
         <Route path="/courses/:courseId" element={<CourseDetails />} />
-        <Route
-          path="/view-course/:courseId/section/:sectionId/sub-section/:subSectionId"
-          element={<VideoDetails />}
-        />
+        {user?.accountType === ACCOUNT_TYPE.STUDENT && (
+            <>
+              <Route
+                path="/view-course/:courseId/section/:sectionId/sub-section/:subSectionId"
+                element={<VideoDetails />}
+              />
+            </>
+          )}
+
         {/* Private Dashboard Route */}
         <Route
           path="/dashboard/*"

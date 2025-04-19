@@ -11,7 +11,8 @@ const {
   getFullCourseDetails,
   editCourse,
   getInstructorCourses,
-  deleteCourse,
+  deleteCourse, 
+  updateCourseProgress
 } = require("../controllers/Course");
 
 const {
@@ -107,6 +108,7 @@ router.get("/instructor/courses", auth, isInstructor, getInstructorCourses);
 
 // Delete a Course
 router.delete("/courses/:courseId", deleteCourse);
+router.post("/course/updateCourseProgress", auth, isStudent, updateCourseProgress);
 
 // ********************************************************************************************************
 //                                      Category Routes (Only by Admin)

@@ -6,7 +6,6 @@ import { useLocation, useNavigate, useParams } from "react-router-dom"
 
 import IconBtn from "../../../components/common/IconBtn"
 
-
 export default function VideoDetailsSidebar({ setReviewModal }) {
   const [activeStatus, setActiveStatus] = useState("")
   const [videoBarActive, setVideoBarActive] = useState("")
@@ -21,23 +20,22 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
   } = useSelector((state) => state.viewCourse)
 
   useEffect(() => {
-    ;(() => {
-      if (!courseSectionData.length) return
-      const currentSectionIndx = courseSectionData.findIndex(
-        (data) => data._id === sectionId
-      )
-      const currentSubSectionIndx = courseSectionData?.[
-        currentSectionIndx
-      ]?.subSection.findIndex((data) => data._id === subSectionId)
-      const activeSubSectionId =
-        courseSectionData[currentSectionIndx]?.subSection?.[
-          currentSubSectionIndx
-        ]?._id
-      setActiveStatus(courseSectionData?.[currentSectionIndx]?._id)
+    // Ensure courseSectionData is available before accessing it
+    if (!courseSectionData || !Array.isArray(courseSectionData) || courseSectionData.length === 0) return
+
+    const currentSectionIndx = courseSectionData.findIndex(
+      (data) => data._id === sectionId
+    )
+    const currentSubSectionIndx = courseSectionData?.[currentSectionIndx]?.subSection?.findIndex(
+      (data) => data._id === subSectionId
+    )
+
+    if (currentSectionIndx !== -1 && currentSubSectionIndx !== -1) {
+      const activeSubSectionId = courseSectionData[currentSectionIndx]?.subSection[currentSubSectionIndx]?._id
+      setActiveStatus(courseSectionData[currentSectionIndx]?._id)
       setVideoBarActive(activeSubSectionId)
-    })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courseSectionData, courseEntireData, location.pathname])
+    }
+  }, [courseSectionData, sectionId, subSectionId, location.pathname])
 
   return (
     <>
@@ -68,7 +66,7 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
         </div>
 
         <div className="h-[calc(100vh - 5rem)] overflow-y-auto">
-          {courseSectionData.map((course, index) => (
+          {courseSectionData?.map((course, index) => (
             <div
               className="mt-2 cursor-pointer text-sm text-richblack-5"
               onClick={() => setActiveStatus(course?._id)}
@@ -80,12 +78,9 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
                   {course?.sectionName}
                 </div>
                 <div className="flex items-center gap-3">
-                  {/* <span className="text-[12px] font-medium">
-                    Lession {course?.subSection.length}
-                  </span> */}
                   <span
                     className={`${
-                      activeStatus === course?.sectionName
+                      activeStatus === course?._id
                         ? "rotate-0"
                         : "rotate-180"
                     } transition-all duration-500`}
@@ -98,7 +93,7 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
               {/* Sub Sections */}
               {activeStatus === course?._id && (
                 <div className="transition-[height] duration-500 ease-in-out">
-                  {course.subSection.map((topic, i) => (
+                  {course?.subSection?.map((topic, i) => (
                     <div
                       className={`flex gap-3  px-5 py-2 ${
                         videoBarActive === topic._id
@@ -115,7 +110,7 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
                     >
                       <input
                         type="checkbox"
-                        checked={completedLectures.includes(topic?._id)}
+                        checked={completedLectures?.includes(topic?._id)}
                         onChange={() => {}}
                       />
                       {topic.title}
