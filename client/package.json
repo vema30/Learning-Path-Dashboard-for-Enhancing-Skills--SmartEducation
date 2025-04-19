@@ -37,11 +37,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thepranaygupta/react-tailwind-css-starter-pack.git"
-  },
-  "author": "Pranay Gupta",
+    
+  "author": "vema ",
   "bugs": {
-    "url": "https://github.com/thepranaygupta/react-tailwind-css-starter-pack/issues"
+   
   },
   "scripts": {
     "start": "react-scripts start",
