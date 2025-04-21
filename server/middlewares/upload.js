@@ -1,15 +1,21 @@
-const multer = require('multer');
+const multer = require("multer");
+const path = require("path");
 
-// Set the storage destination and file naming conventions
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/thumbnails');  // Folder to store uploaded images
+  destination: function (req, file, cb) {
+    cb(null, "uploads/videos");
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));  // Unique filename
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
   }
 });
 
-const upload = multer({ storage: storage });
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("video/")) cb(null, true);
+  else cb(new Error("Only video files are allowed."), false);
+};
+
+const upload = multer({ storage, fileFilter });
 
 module.exports = upload;

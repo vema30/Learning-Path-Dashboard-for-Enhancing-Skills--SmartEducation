@@ -7,9 +7,9 @@ const path = require("path");
 const fs = require("fs");
 
 const cloudinary=require("../config/cloudinary");
-const { uploadImageToCloudinary } = require("../utils/imageUploader")
+// const { uploadImageToCloudinary } = require("../utils/imageUploader")
 
-
+const {uploadImageToCloudinary}=require("../utils/imageUploader");
 
 const  createCourse = async (req, res) => {
     //console.log("hhh")
@@ -30,14 +30,14 @@ const  createCourse = async (req, res) => {
         instructions: _instructions,
       } = req.body
       // Get thumbnail image from request files
-      const thumbnail = req.files.thumbnailImage
-  
+      const thumbnail = req.files.thumbnailImage;
       // Convert the tag and instructions from stringified Array to Array
       const tag = JSON.parse(_tag)
       const instructions = JSON.parse(_instructions)
   
-      console.log("tag", tag)
-      console.log("instructions", instructions)
+      // console.log("tag", tag)
+      // console.log("instructions", instructions)
+      console.log("thumbnail", thumbnail)
   
       // Check if any of the required fields are missing
       if (
@@ -80,11 +80,25 @@ const  createCourse = async (req, res) => {
       }
       
       // Upload the Thumbnail to Cloudinary
-      const thumbnailImage = await uploadImageToCloudinary(
+      let thumbnailImage;
+     try{
+      thumbnailImage = await uploadImageToCloudinary(
         thumbnail,
         process.env.FOLDER_NAME
       )
-      console.log(thumbnailImage)
+    }
+      catch(e)
+      {
+        console.log("e",e.message);
+        console.log("error in uploading image to cloudinary");
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload thumbnail image",
+          error: e.message,
+        })
+      }
+     
+
       // Create a new course with the given details
       const newCourse = await Course.create({
         courseName,

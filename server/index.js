@@ -2,6 +2,10 @@ const express = require("express");
 const app = express();
 const path = require('path');
 
+
+
+
+
  const userRoutes = require("./routes/User");
 
 const profileRoutes = require("./routes/Profile");
@@ -39,14 +43,16 @@ app.use(
   
 
 //middleware for fileuplading
-app.use(
-	fileUpload({
-		useTempFiles:true,
-		tempFileDir:"/tmp",
-		limits: { fileSize: 550 * 1024 * 1024 },
-	})
-)
+app.use(fileUpload());
+// app.use(
+// 	fileUpload({
+// 		useTempFiles:true,
+// 		tempFileDir:"/tmp",
+// 		limits: { fileSize: 550 * 1024 * 1024 },
+// 	})
+// )
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/videos", express.static(path.join(__dirname, "uploads/videos")));
 
 //cloudinary connection
 cloudinaryConnect();

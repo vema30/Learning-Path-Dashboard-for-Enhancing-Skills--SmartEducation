@@ -35,13 +35,7 @@
     "video-react": "^0.16.0",
     "web-vitals": "^2.1.4"
   },
-  "repository": {
-    "type": "git",
-    
-  "author": "vema ",
-  "bugs": {
-   
-  },
+  
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

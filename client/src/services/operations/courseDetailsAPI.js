@@ -251,7 +251,7 @@ export const createSubSection = async (sectionId, data, token) => {
     const response = await apiConnector("POST", CREATE_SUBSECTION_API, data, {
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
+       
       },
     });
 

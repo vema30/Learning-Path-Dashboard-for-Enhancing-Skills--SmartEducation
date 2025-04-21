@@ -90,7 +90,11 @@ router.post(
   
   createSubSection 
 );
-
+// router.post(
+//   "/sections/:sectionId/subsections",
+//   upload.single("video"), // Multer middleware
+//   createSubSection
+// );
 // Get all Registered Courses
 router.get("/courses", showAllCourses);
 
