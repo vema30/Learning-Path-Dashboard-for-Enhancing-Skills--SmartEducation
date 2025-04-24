@@ -16,6 +16,7 @@ import Course_Card from "./Course_Card"
 function Course_Slider({ Courses }) {
   return (
     <>
+   
       {Courses?.length ? (
         <Swiper
           slidesPerView={1}

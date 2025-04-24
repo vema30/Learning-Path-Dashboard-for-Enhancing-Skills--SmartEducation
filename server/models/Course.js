@@ -37,9 +37,9 @@ const CourseSchema = new Schema({
   thumbnail: {
     type: String
   },
-  tag:{
-    type:[String],
-    required:true
+  tag: {
+    type: [String],
+    required: true
   },
   Category: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -48,7 +48,12 @@ const CourseSchema = new Schema({
   studentsEnrolled: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
-  }]
+  }],
+  courseProgress: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "CourseProgress",  // Add reference to CourseProgress schema
+    default: null  // Set default to null
+  }
 }, {
   timestamps: true  // ✅ This adds createdAt and updatedAt
 });

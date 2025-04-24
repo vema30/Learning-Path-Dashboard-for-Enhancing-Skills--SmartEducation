@@ -9,15 +9,43 @@ export default function EnrolledCourses() {
 
   const [enrolledCourses, setEnrolledCourses] = useState(null);
 
+  // const getEnrolledCourses = async () => {
+  //   try {
+  //     const res = await getUserEnrolledCourses(token);
+  //     console.log("res",res);
+  //     setEnrolledCourses(res);
+  //   } catch (error) {
+  //     console.log("Could not fetch enrolled courses.");
+  //   }
+  // };
   const getEnrolledCourses = async () => {
     try {
       const res = await getUserEnrolledCourses(token);
-      console.log("res",res);
-      setEnrolledCourses(res);
+      console.log("res", res);
+    console.log("res",res);
+      const coursesWithProgress = res.map((course) => {
+        let totalSubsections = 0;
+        let completedVideos = course?.courseProgress?.completedVideos || [];
+        console.log('completedVideos',completedVideos);
+        // Count total subsections in the course
+        course.sections.forEach((section) => {
+          totalSubsections += section.subSections?.length || 0;
+        });
+  
+        const progress =
+          totalSubsections > 0
+            ? Math.round((completedVideos.length / totalSubsections) * 100)
+            : 0;
+  
+        return { ...course, progressPercentage: progress };
+      });
+  
+      setEnrolledCourses(coursesWithProgress);
     } catch (error) {
       console.log("Could not fetch enrolled courses.");
     }
   };
+  
 
   useEffect(() => {
     getEnrolledCourses();

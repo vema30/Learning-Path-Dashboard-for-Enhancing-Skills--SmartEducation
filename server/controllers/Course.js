@@ -1,5 +1,8 @@
   // Correct path to multer config
+  
   require('dotenv').config();
+  const CourseProgress = require("../models/CourseProgress");
+
 const Course = require("../models/Course");
 const Category = require("../models/Category");
 const User = require("../models/User");
@@ -426,93 +429,168 @@ const deleteCourse = async (req, res) => {
 // Controller to update user's course progress
 
 
+// const updateCourseProgress = async (req, res) => {
+//   const { courseId, subsectionId } = req.body;
+//   console.log("courseID",courseId);
+//   console.log("course id, section ID", courseId, subsectionId);
+
+//   const userId = req.user.id;  // Assuming user ID is available from authentication middleware
+
+//   try {
+//     // Fetch the course by ID and populate both 'sections' and 'sections.subSections'
+//     const course = await Course.findById(courseId)
+//       .populate({
+//         path: 'sections',
+//         populate: {
+//           path: 'subSections'
+//         }
+//       });
+
+//     if (!course) {
+//       return res.status(404).json({ message: 'Course not found' });
+//     }
+
+//     // Validate if the sections and subSections exist
+//     if (!course.sections || !Array.isArray(course.sections)) {
+//       return res.status(400).json({ message: 'Course sections data is missing or malformed' });
+//     }
+
+//     // Try to find the section that contains the subsection
+//     let subsectionFound = false;
+//     const section = course.sections.find((sec) => {
+//       // Check if the section contains subSections and if subsectionId is present in the subSections
+//       if (Array.isArray(sec.subSections)) {
+//         return sec.subSections.some((sub) => sub._id.toString() === subsectionId);
+//       }
+//       return false;  // No subSections found in this section
+//     });
+
+//     // If no section or subsection is found
+//     if (!section) {
+//       console.log("Section or Subsection not found");
+//       return res.status(404).json({ message: 'Subsection not found in course' });
+//     }
+
+//     // Now, find the actual subsection inside the section
+//     const subsection = section.subSections.find((sub) => sub._id.toString() === subsectionId);
+//     if (!subsection) {
+//       return res.status(404).json({ message: 'Subsection not found' });
+//     }
+
+//     // Fetch the user data and check if the subsection is already completed
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found' });
+//     }
+
+//     // Ensure completedLectures is always an array
+//     if (!user.completedLectures) {
+//       user.completedLectures = [];
+//     }
+
+//     // Check if the lecture has already been marked as completed
+//     if (user.completedLectures.includes(subsectionId)) {
+//       return res.status(400).json({ message: 'Lecture already completed' });
+//     }
+
+//     // Add subsection to user's completed lectures
+//     user.completedLectures.push(subsectionId);
+//     await user.save();
+
+//     // Optionally, update the course progress based on completed lectures
+//     course.totalCompletedLectures = course.sections.reduce((acc, sec) => {
+//       return acc + sec.subSections.filter((sub) =>
+//         user.completedLectures.includes(sub._id.toString())
+//       ).length;
+//     }, 0);
+//     await course.save();
+//           console.log("courser",course);
+//     return res.status(200).json({
+//       message: 'Course progress updated successfully',
+//       completedLectures: user.completedLectures,
+//       totalCompletedLectures: course.totalCompletedLectures,
+//     });
+
+//   } catch (error) {
+//     console.error('Error updating course progress:', error);
+//     return res.status(500).json({ message: 'Server error' });
+//   }
+// };
+
+// const Course = require("../models/Course"); // Assuming the Course model is imported
+// const User = require("../models/User"); // Assuming the User model is imported
 const updateCourseProgress = async (req, res) => {
   const { courseId, subsectionId } = req.body;
-  console.log("course id, section ID", courseId, subsectionId);
-
-  const userId = req.user.id;  // Assuming user ID is available from authentication middleware
+  const userId = req.user.id;
 
   try {
-    // Fetch the course by ID and populate both 'sections' and 'sections.subSections'
-    const course = await Course.findById(courseId)
-      .populate({
-        path: 'sections',
-        populate: {
-          path: 'subSections'
-        }
-      });
+    // Fetch the course
+    const course = await Course.findById(courseId).populate({
+      path: "sections",
+      populate: {
+        path: "subSections",
+      },
+    });
 
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ message: "Course not found" });
     }
 
-    // Validate if the sections and subSections exist
-    if (!course.sections || !Array.isArray(course.sections)) {
-      return res.status(400).json({ message: 'Course sections data is missing or malformed' });
+    // Check if the subsection exists
+    const subsectionExists = course.sections.some((section) =>
+      section.subSections.some((sub) => sub._id.toString() === subsectionId)
+    );
+
+    if (!subsectionExists) {
+      return res.status(404).json({ message: "Subsection not found in course" });
     }
 
-    // Try to find the section that contains the subsection
-    let subsectionFound = false;
-    const section = course.sections.find((sec) => {
-      // Check if the section contains subSections and if subsectionId is present in the subSections
-      if (Array.isArray(sec.subSections)) {
-        return sec.subSections.some((sub) => sub._id.toString() === subsectionId);
+    // Find or create the CourseProgress record
+    let progress = await CourseProgress.findOne({ userId, courseId });
+
+    if (!progress) {
+      // Create a new progress record if it doesn't exist
+      progress = await CourseProgress.create({
+        userId,
+        courseId,
+        completedSubsections: [subsectionId],
+      });
+
+      // Set the courseProgress field to reference the newly created progress
+      course.courseProgress = progress._id;
+      await course.save();
+    } else {
+      // If progress exists, update the completed subsections
+      if (progress.completedSubsections.includes(subsectionId)) {
+        return res.status(400).json({ message: "Subsection already completed" });
       }
-      return false;  // No subSections found in this section
-    });
 
-    // If no section or subsection is found
-    if (!section) {
-      console.log("Section or Subsection not found");
-      return res.status(404).json({ message: 'Subsection not found in course' });
+      progress.completedSubsections.push(subsectionId);
+      await progress.save();
     }
 
-    // Now, find the actual subsection inside the section
-    const subsection = section.subSections.find((sub) => sub._id.toString() === subsectionId);
-    if (!subsection) {
-      return res.status(404).json({ message: 'Subsection not found' });
-    }
-
-    // Fetch the user data and check if the subsection is already completed
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Ensure completedLectures is always an array
-    if (!user.completedLectures) {
-      user.completedLectures = [];
-    }
-
-    // Check if the lecture has already been marked as completed
-    if (user.completedLectures.includes(subsectionId)) {
-      return res.status(400).json({ message: 'Lecture already completed' });
-    }
-
-    // Add subsection to user's completed lectures
-    user.completedLectures.push(subsectionId);
-    await user.save();
-
-    // Optionally, update the course progress based on completed lectures
-    course.totalCompletedLectures = course.sections.reduce((acc, sec) => {
-      return acc + sec.subSections.filter((sub) =>
-        user.completedLectures.includes(sub._id.toString())
-      ).length;
-    }, 0);
-    await course.save();
-
+    // Calculate the progress percentage
+    const allSubSections = course.sections.flatMap((section) =>
+      section.subSections.map((sub) => sub._id.toString())
+    );
+    const completedCount = progress.completedSubsections.length;
+    const totalCount = allSubSections.length;
+    const progressPercentage = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
     return res.status(200).json({
-      message: 'Course progress updated successfully',
-      completedLectures: user.completedLectures,
-      totalCompletedLectures: course.totalCompletedLectures,
+      message: "Course progress updated successfully",
+      completedSubsections: progress.completedSubsections,
+      progressPercentage,
     });
-
+    
   } catch (error) {
-    console.error('Error updating course progress:', error);
-    return res.status(500).json({ message: 'Server error' });
+    console.error("Error updating course progress:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
+
+
+//module.exports = { updateCourseProgress };
 
 
 module.exports = {
