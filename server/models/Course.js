@@ -49,10 +49,15 @@ const CourseSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
-  courseProgress: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "CourseProgress",  // Add reference to CourseProgress schema
-    default: null  // Set default to null
+  courseProgress: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CourseProgress",
+    }
+  ],
+    progressPercentage:{
+    type:Number,
+    default:0
   }
 }, {
   timestamps: true  // ✅ This adds createdAt and updatedAt

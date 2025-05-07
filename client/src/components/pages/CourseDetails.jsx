@@ -73,7 +73,7 @@ function CourseDetails() {
 
   const handleBuyCourse = () => {
     if (token) {
-      BuyCourse(token, [courseId], user, navigate, dispatch)
+      dispatch(BuyCourse(courseId, token));
     } else {
       setConfirmationModal({
         text1: "You are not logged in!",

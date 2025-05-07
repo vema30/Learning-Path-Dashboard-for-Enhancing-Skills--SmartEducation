@@ -468,7 +468,7 @@ export const markLectureAsComplete = async (data, token) => {
 
     if (response?.data?.success) {
       toast.success("Lecture marked as complete ✅");
-      result = true;
+     // result = true;
     } else {
       throw new Error(response?.data?.message || "Something went wrong");
     }

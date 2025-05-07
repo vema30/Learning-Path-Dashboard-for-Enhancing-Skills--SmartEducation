@@ -18,9 +18,9 @@ export const profileEndpoints = {
 
 // STUDENTS ENDPOINTS
 export const studentEndpoints = {
-  COURSE_PAYMENT_API: BASE_URL + "/payment/capturePayment",
-  COURSE_VERIFY_API: BASE_URL + "/payment/verifyPayment",
-  SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail",
+  COURSE_PAYMENT_API: BASE_URL + "/payment/order",
+  COURSE_VERIFY_API: BASE_URL + "/payment/verify",
+  SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/send-email",
 }
 export const categoriesEndpoints = {
   CREATE_CATEGORY_API: "http://localhost:4000/api/v1/course/categories",
@@ -30,7 +30,7 @@ export const categoriesEndpoints = {
 // COURSE ENDPOINTS
 export const courseEndpoints = {
   GET_ALL_COURSE_API: BASE_URL + "/course/courses",
-  COURSE_DETAILS_API: (courseId) => `http://localhost:4000/api/v1/courses/${courseId}`,
+  COURSE_DETAILS_API: (courseId) => `http://localhost:4000/api/v1/course/courses/${courseId}`,
 
   EDIT_COURSE_API: BASE_URL + "/course/editCourse",
   COURSE_CATEGORIES_API: BASE_URL + "/course/showAllCategories",

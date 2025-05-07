@@ -5,12 +5,12 @@ const { capturePayment, verifyPayment, sendPaymentSuccessEmail } = require("../c
 const { auth, isInstructor, isStudent, isAdmin } = require("../middlewares/auth");
 
 // Capture Payment Route
-router.post("/capturePayment", auth, isStudent, capturePayment);
+router.post("/order", auth, isStudent, capturePayment);
 
 // Verify Payment Route
-router.post("/verifyPayment", auth, isStudent, verifyPayment);
+router.post("/verify", auth, isStudent, verifyPayment);
 
 // Send Payment Success Email Route
-router.post("/sendPaymentSuccessEmail", auth, isStudent, sendPaymentSuccessEmail);
+router.post("/send-email", auth, isStudent, sendPaymentSuccessEmail);
 
 module.exports = router;

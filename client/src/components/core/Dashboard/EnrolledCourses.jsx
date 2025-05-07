@@ -25,6 +25,7 @@ export default function EnrolledCourses() {
     console.log("res",res);
       const coursesWithProgress = res.map((course) => {
         let totalSubsections = 0;
+        console.log("course",course);
         let completedVideos = course?.courseProgress?.completedVideos || [];
         console.log('completedVideos',completedVideos);
         // Count total subsections in the course

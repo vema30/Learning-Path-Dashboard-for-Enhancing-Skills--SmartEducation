@@ -259,30 +259,88 @@ exports.updateDisplayPicture = async (req, res) => {
 
 
 
+// exports.instructorDashboard = async (req, res) => {
+//   try {
+//     const courseDetails = await Course.find({ instructor: req.user.id })
+
+//     const courseData = courseDetails.map((course) => {
+//       const totalStudentsEnrolled = course.studentsEnroled.length
+//       const totalAmountGenerated = totalStudentsEnrolled * course.price
+
+//       // Create a new object with the additional fields
+//       const courseDataWithStats = {
+//         _id: course._id,
+//         courseName: course.courseName,
+//         courseDescription: course.courseDescription,
+//         // Include other course properties as needed
+//         totalStudentsEnrolled,
+//         totalAmountGenerated,
+//       }
+
+//       return courseDataWithStats
+//     })
+
+//     res.status(200).json({ courses: courseData })
+//   } catch (error) {
+//     console.error(error)
+//     res.status(500).json({ message: "Server Error" })
+//   }
+// }
+
 exports.instructorDashboard = async (req, res) => {
   try {
-    const courseDetails = await Course.find({ instructor: req.user.id })
+    const instructorId = req.user?.id;
 
-    const courseData = courseDetails.map((course) => {
-      const totalStudentsEnrolled = course.studentsEnroled.length
-      const totalAmountGenerated = totalStudentsEnrolled * course.price
+    // Check if the user is authenticated
+    if (!instructorId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
 
-      // Create a new object with the additional fields
-      const courseDataWithStats = {
+    // Fetch courses created by this instructor
+    const courses = await Course.find({ instructor: instructorId });
+
+    // If no courses found
+    if (!courses || courses.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No courses found",
+        courses: [],
+      });
+    }
+
+    // Map and calculate stats
+    const courseData = courses.map((course) => {
+      console.log('Price:', course.price); // Log price
+      console.log('Students Enrolled:', course.studentsEnrolled); // Log students enrolled
+      const totalStudentsEnrolled = course.studentsEnrolled?.length || 0;
+      const price = course.price || 0;  // Set price to 0 if undefined or null
+      const totalAmountGenerated = totalStudentsEnrolled * price;
+
+      console.log('Total Amount Generated:', totalAmountGenerated); // Log the total amount
+
+      return {
         _id: course._id,
         courseName: course.courseName,
         courseDescription: course.courseDescription,
-        // Include other course properties as needed
         totalStudentsEnrolled,
         totalAmountGenerated,
-      }
+      };
+    });
 
-      return courseDataWithStats
-    })
-
-    res.status(200).json({ courses: courseData })
+    return res.status(200).json({
+      success: true,
+      message: "Instructor dashboard data fetched successfully",
+      courses: courseData,
+    });
   } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: "Server Error" })
+    console.error("Instructor Dashboard Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching instructor dashboard data",
+      error: error.message,
+    });
   }
-}
+};

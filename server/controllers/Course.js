@@ -190,7 +190,7 @@ const getCourseDetails = async (req, res) => {
   
       const courseDetails = await Course.findOne({ _id: courseId })
         .populate("instructor", "firstName lastName email")
-        .populate("Category", "name description")
+        .populate("category", "name description")
         .populate("ratingAndReview")
         .populate({
           path: "sections",
@@ -228,8 +228,10 @@ const getFullCourseDetails = async (req, res) => {
   
       const courseDetails = await Course.findById(courseId)
         .populate("instructor", "firstName lastName email")
-        .populate("Category", "name description")
+        .populate("category", "name description")
         .populate("ratingAndReview")
+        .populate("studentsEnrolled")
+
         .populate({
             path: "sections",
             populate: {
@@ -315,42 +317,50 @@ const editCourse = async (req, res) => {
 
 
 const getInstructorCourses = async (req, res) => {
-    try {
-        const instructorId = req.user?.id; // Ensure user is properly extracted from req
-        if (!instructorId) {
-            return res.status(400).json({
-                success: false,
-                message: "Instructor ID is required",
-            });
-        }
+  try {
+      // Ensure that the user ID (instructor) is extracted correctly
+      const instructorId = req.user?.id; // `req.user` should be set by the authentication middleware
+      if (!instructorId) {
+          return res.status(400).json({
+              success: false,
+              message: "Instructor ID is required", // Return an error if the instructor ID is not found
+          });
+      }
 
-        console.log("Instructor ID:", instructorId);
+      console.log("Instructor ID:", instructorId); // Debugging line to verify the instructor ID
 
-        const courses = await Course.find({ instructor: instructorId })
-            .populate("Category", "name description")
-            .exec(); // Ensure query execution
+      // Query to fetch the courses where instructor ID matches
+      const courses = await Course.find({ instructor: instructorId })
+          .populate("category", "name description")
+          .populate("studentsEnrolled")
+ // Populate Category field with name and description
+          .exec(); // Execute the query
+   console.log("courses",courses);
+      // If no courses are found for the instructor
+      if (!courses || courses.length === 0) {
+          return res.status(404).json({
+              success: false,
+              message: "No courses found for this instructor", // Return a message if no courses found
+          });
+      }
 
-        if (!courses || courses.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "No courses found for this instructor",
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Instructor's courses fetched successfully",
-            courses,
-        });
-    } catch (error) {
-        console.error("Error fetching instructor courses:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-            error: error.message,
-        });
-    }
+      // If courses are found, return them in the response
+      return res.status(200).json({
+          success: true,
+          message: "Instructor's courses fetched successfully", // Success message
+          courses, // Return the courses data
+      });
+  } catch (error) {
+      // Log and handle any errors that occur during the process
+      console.error("Error fetching instructor courses:", error);
+      return res.status(500).json({
+          success: false,
+          message: "Internal Server Error", // General error message
+          error: error.message, // Return the error message for debugging
+      });
+  }
 };
+
 
 
 // Controller to delete a course
@@ -522,6 +532,7 @@ const deleteCourse = async (req, res) => {
 const updateCourseProgress = async (req, res) => {
   const { courseId, subsectionId } = req.body;
   const userId = req.user.id;
+console.log("jjhbhjbjh")
 
   try {
     // Fetch the course
@@ -531,51 +542,78 @@ const updateCourseProgress = async (req, res) => {
         path: "subSections",
       },
     });
+    // course.courseProgress=100;
+    console.log("course",course);
 
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
 
+    console.log("gvhhgvhg")
     // Check if the subsection exists
     const subsectionExists = course.sections.some((section) =>
       section.subSections.some((sub) => sub._id.toString() === subsectionId)
     );
 
     if (!subsectionExists) {
-      return res.status(404).json({ message: "Subsection not found in course" });
+     // return res.status(404).json({ message: "Subsection not found in course" });
     }
 
     // Find or create the CourseProgress record
     let progress = await CourseProgress.findOne({ userId, courseId });
 
+    // if (!progress) {
+    //   // Create a new progress record if it doesn't exist
+    //   progress = await CourseProgress.create({
+    //     userId,
+    //     courseId,
+    //     completedSubsections: [subsectionId],
+    //   });
+
+    //   // Set the courseProgress field to reference the newly created progress
+    //   course.courseProgress = progress._id;
+    //   await course.save();
+    // } else {
+    //   // If progress exists, update the completed subsections
+    //   if (progress.completedSubsections.includes(subsectionId)) {
+    //     return res.status(400).json({ message: "Subsection already completed" });
+    //   }
+
+    //   progress.completedSubsections.push(subsectionId);
+    //   await progress.save();
+    // }
     if (!progress) {
-      // Create a new progress record if it doesn't exist
       progress = await CourseProgress.create({
         userId,
         courseId,
-        completedSubsections: [subsectionId],
+        completedVideos: [subsectionId], // not completedSubsections
       });
-
-      // Set the courseProgress field to reference the newly created progress
-      course.courseProgress = progress._id;
-      await course.save();
     } else {
-      // If progress exists, update the completed subsections
-      if (progress.completedSubsections.includes(subsectionId)) {
-        return res.status(400).json({ message: "Subsection already completed" });
+      if (progress.completedVideos.includes(subsectionId)) {
+        console.log("heyy",progress)
+   //     return res.status(400).json({ message: "Subsection already completed" });
       }
-
-      progress.completedSubsections.push(subsectionId);
+    
+      progress.completedVideos.push(subsectionId); // not completedSubsections
       await progress.save();
     }
-
+    console.log("heyy",progress)
+    const completedCount = progress.completedVideos.length;
+    
+   console.log("completedCount",completedCount)
     // Calculate the progress percentage
     const allSubSections = course.sections.flatMap((section) =>
       section.subSections.map((sub) => sub._id.toString())
     );
-    const completedCount = progress.completedSubsections.length;
+    console.log("completed",allSubSections);
+   // const completedCount = progress.completedSubsections.length;
     const totalCount = allSubSections.length;
+    console.log("totalCount",totalCount);
     const progressPercentage = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+    console.log("progressPercentage",progressPercentage)
+ //   course.progressPercentage=courseProgress;
+    courseProgress=progressPercentage;
+    console.log("c",course);
     return res.status(200).json({
       message: "Course progress updated successfully",
       completedSubsections: progress.completedSubsections,

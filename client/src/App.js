@@ -18,6 +18,8 @@ import Settings from "./components/core/Dashboard/Settings/index";
 import AddCourse from "./components/core/Dashboard/AddCourse/index";
 import PrivateRoute from "./components/core/Auth/PrivateRoute";
 import CreateCategory from './components/core/Dashboard/CreateCategory'
+import Articles from './components/common/Articles/index';
+import Instructor from './components/core/Dashboard/InstructorDashboard/Instructor';
 //import CourseDetailPage from "./components/pages/CourseDetailPage";
 import CourseDetails from "./components/pages/CourseDetails";
 //import CourseBuilderForm from "./components/core/Dashboard/AddCourse/CourseBuilder/CourseBuilderForm";
@@ -56,6 +58,7 @@ const App = () => {
         <Route path="/update-password/:token" element={<ResetPassword />} />
         <Route path="/catalog/:catalogName" element={<Catalog/>}/>
         <Route path="/courses/:courseId" element={<CourseDetails />} />
+        <Route path="/Articles" element={<Articles/>}></Route>
         {user?.accountType === ACCOUNT_TYPE.STUDENT && (
             <>
               <Route
@@ -82,6 +85,7 @@ const App = () => {
           <Route path="my-courses" element={<MyCourses/>} />
           <Route path="add-course" element={<AddCourse />} />
           <Route path="enrolled-courses" element={<EnrolledCourses />} />
+          <Route path="instructor" element={<Instructor />} />
         </Route>
       </Routes>
        
