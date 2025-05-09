@@ -130,21 +130,20 @@ export const addCourseDetails = async (data, token) => {
   let result = null;
   const toastId = toast.loading("Loading...");
   console.log("CREATE_COURSE_API", CREATE_COURSE_API);
-  console.log("token in addcoursedetails",token);
-   console.log("hmm token",token);
+  console.log("token in addcoursedetails", token,data);
+  
   try {
     const response = await apiConnector("POST", "http://localhost:4000/api/v1/course/createcourse", data, {
       Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data", // required when sending files
     });
-    
-    
 
     console.log("CREATE COURSE API RESPONSE............", response);
 
     // Check the response structure; ensure the API returns a success field in data
     if (!response?.data?.success) {
-      console.log("response",);
-      throw new Error("Could Not Add Course Details");
+      console.log("Response does not have success field");
+      throw new Error(response?.data?.message || "Could Not Add Course Details");
     }
 
     toast.success("Course Details Added Successfully");
@@ -160,7 +159,6 @@ export const addCourseDetails = async (data, token) => {
       toast.error("There was an error with your request. Please try again.");
     }
   } finally {
-    // Ensure that the loading toast is dismissed in any case
     toast.dismiss(toastId);
   }
 
@@ -168,12 +166,13 @@ export const addCourseDetails = async (data, token) => {
 };
 
 
+
 // edit the course details
-export const editCourseDetails = async (data, token) => {
+export const editCourseDetails = async (courseId,data, token) => {
   let result = null
   const toastId = toast.loading("Loading...")
   try {
-    const response = await apiConnector("PUT", 'http://localhost:4000/api/v1/course/editCourse', data, {
+    const response = await apiConnector("PUT", `http://localhost:4000/api/v1/course/courses/${courseId}`, data, {
       "Content-Type": "multipart/form-data",
       Authorization: `Bearer ${token}`,
 
@@ -427,8 +426,8 @@ export const getFullDetailsOfCourse = async (courseId, token) => {
   let result = null
   try {
     const response = await apiConnector(
-      "POST",
-      GET_FULL_COURSE_DETAILS_AUTHENTICATED,
+      "get",
+      `http://localhost:4000/api/v1/course/courses/${courseId}/full-details`, // Pass courseId as part of the URL
       {
         courseId,
       },

@@ -7,6 +7,7 @@ export default function IconBtn({
   customClasses,
   type,
 }) {
+  //console.log("onclick", onclick)
   return (
     <button
       disabled={disabled}

@@ -55,7 +55,7 @@ export default function PublishCourse() {
     formData.append("status", getValues("public") ? COURSE_STATUS.PUBLISHED : COURSE_STATUS.DRAFT);
 
     setLoading(true);
-    const result = await editCourseDetails(formData, token);
+    const result = await editCourseDetails(course._id,formData, token);
     if (result) {
       goToCourses();
     }
@@ -95,7 +95,8 @@ export default function PublishCourse() {
           >
             Back
           </button>
-          <IconBtn disabled={loading} text="Save Changes" onclick={handleSubmit(onSubmit)} />
+          <button  onClick={handleSubmit(onSubmit)}>save changes</button>
+       {/* {   <IconBtn disabled={loading} text="Save Changes" onclick={handleSubmit(onSubmit)} />} */}
         </div>
       </form>
     </div>

@@ -1,15 +1,12 @@
+
 import { useDispatch, useSelector } from "react-redux"
 import { Table, Tbody, Td, Th, Thead, Tr } from "react-super-responsive-table"
-
-import { setCourse, setEditCourse } from "../../../../slices/courseSlice"
-import "react-super-responsive-table/dist/SuperResponsiveTableStyle.css"
-import { useState } from "react"
 import { FaCheck } from "react-icons/fa"
 import { FiEdit2 } from "react-icons/fi"
 import { HiClock } from "react-icons/hi"
 import { RiDeleteBin6Line } from "react-icons/ri"
-import { useNavigate } from "react-router-dom"
-
+import { Link } from "react-router-dom"
+import { useState } from "react"
 import { formatDate } from "../../../../services/formatDate"
 import {
   deleteCourse,
@@ -20,7 +17,6 @@ import ConfirmationModal from "../../../common/ConfirmationModal"
 
 export default function CoursesTable({ courses, setCourses }) {
   const dispatch = useDispatch()
-  const navigate = useNavigate()
   const { token } = useSelector((state) => state.auth)
   const [loading, setLoading] = useState(false)
   const [confirmationModal, setConfirmationModal] = useState(null)
@@ -36,8 +32,6 @@ export default function CoursesTable({ courses, setCourses }) {
     setConfirmationModal(null)
     setLoading(false)
   }
-
-   console.log("All Course ", courses)
 
   return (
     <>
@@ -63,7 +57,6 @@ export default function CoursesTable({ courses, setCourses }) {
             <Tr>
               <Td className="py-10 text-center text-2xl font-medium text-richblack-100">
                 No courses found
-                {/* TODO: Need to change this state */}
               </Td>
             </Tr>
           ) : (
@@ -116,16 +109,13 @@ export default function CoursesTable({ courses, setCourses }) {
                   ₹{course.price}
                 </Td>
                 <Td className="text-sm font-medium text-richblack-100 ">
-                  <button
-                    disabled={loading}
-                    onClick={() => {
-                      navigate(`/dashboard/edit-course/${course._id}`)
-                    }}
+                  <Link
+                    to={`/dashboard/edit-course/${course._id}`}
                     title="Edit"
                     className="px-2 transition-all duration-200 hover:scale-110 hover:text-caribbeangreen-300"
                   >
                     <FiEdit2 size={20} />
-                  </button>
+                  </Link>
                   <button
                     disabled={loading}
                     onClick={() => {

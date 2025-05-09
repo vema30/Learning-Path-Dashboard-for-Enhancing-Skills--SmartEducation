@@ -12,14 +12,17 @@ import Dashboard from "./components/pages/Dashboard";
 import ForgetPassword from "./components/common/ForgetPassword";
 import ResetPassword from "./components/common/ResetPassword";
 import MyProfile from "./components/core/Dashboard/MyProfile";
+import InstructorTests from "./components/pages/Tests/InstructorTests";
 import Cart from "./components/core/Dashboard/Cart";
 import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
 import Settings from "./components/core/Dashboard/Settings/index";
+import EditTest from "./components/pages/Tests/EditTest";
 import AddCourse from "./components/core/Dashboard/AddCourse/index";
 import PrivateRoute from "./components/core/Auth/PrivateRoute";
 import CreateCategory from './components/core/Dashboard/CreateCategory'
 import Articles from './components/common/Articles/index';
 import Instructor from './components/core/Dashboard/InstructorDashboard/Instructor';
+import Index from './components/common/tests/index'
 //import CourseDetailPage from "./components/pages/CourseDetailPage";
 import CourseDetails from "./components/pages/CourseDetails";
 //import CourseBuilderForm from "./components/core/Dashboard/AddCourse/CourseBuilder/CourseBuilderForm";
@@ -32,6 +35,13 @@ import { ACCOUNT_TYPE } from "./utils/constants"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom";
 import   Recommendation from './helper/Recommendation'
+import EditCourse from "./components/core/Dashboard/EditCourse";
+import CreateCategoryTests from "./components/pages/Tests/createCategory";
+import CreateTests from "./components/pages/Tests/CreateTests";
+import MyTests from './components/pages/Tests/MyTests'
+import TestDetails from './components/pages/Tests/TestDetails'
+import TestResult from './components/pages/Tests/TestResult'
+import QuizDetails from "./components/pages/Tests/QuizDetails";
 const App = () => { 
    const { user } = useSelector((state) => state.profile)
    console.log("hi",user?.accountType, ACCOUNT_TYPE.STUDENT);
@@ -48,6 +58,8 @@ const App = () => {
      
 
       <Routes>
+      <Route path="/dashboard/edit-course/:courseId" element={<EditCourse />} />
+
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignupForm />} />
@@ -59,6 +71,14 @@ const App = () => {
         <Route path="/catalog/:catalogName" element={<Catalog/>}/>
         <Route path="/courses/:courseId" element={<CourseDetails />} />
         <Route path="/Articles" element={<Articles/>}></Route>
+        <Route path="/tests" element={<MyTests/>}></Route>
+        <Route path="/tests/create-category" element={<CreateCategoryTests/>}></Route>
+        <Route path="/tests/create-tests" element={<CreateTests/>}></Route>
+        <Route path="/testdetails" element={<TestDetails/>}/>
+        <Route path="/test-result" element={<TestResult/>}></Route>
+        <Route path="/quiz/:id" element={<QuizDetails/>}></Route>
+        <Route path="/edit-test/:testId" element={<EditTest/>}></Route>
+        <Route path="/test-mine" element={<InstructorTests/>}></Route>
         {user?.accountType === ACCOUNT_TYPE.STUDENT && (
             <>
               <Route

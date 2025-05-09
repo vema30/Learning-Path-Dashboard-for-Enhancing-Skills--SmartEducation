@@ -8,7 +8,7 @@ const fileUpload = require("express-fileupload");
 const multer = require("multer");
 const {auth} = require("./middlewares/auth");
 const stringSimilarity = require('string-similarity');
-
+const QuizCategory = require('./models/QuizCategory');
 // Config
 require("dotenv").config();
 const PORT = process.env.PORT || 4000;
@@ -23,7 +23,10 @@ const Post = require("./models/Post");
 const Comment = require("./models/Comment");
 
 // Routes
-const testRoutes = require("./routes/test");
+const categoryRoutes = require("./routes/categoryRoutes");
+const testRoutes = require("./routes/testRoutes");
+const quizRoutes=require("./routes/quizRoutes")
+const testRoute=require("./routes/test")
 const userRoutes = require("./routes/User");
 const profileRoutes = require("./routes/Profile");
 const paymentRoutes = require("./routes/Payments");
@@ -40,10 +43,10 @@ app.use(cors({
   origin: "http://localhost:3000",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: "*", // 🚫 NOT valid when credentials: true
+ 
 }));
-
-//app.use(fileUpload());
+app.use(fileUpload());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/videos", express.static(path.join(__dirname, "uploads/videos")));
 
@@ -57,6 +60,22 @@ app.use("/api/v1/course", courseRoutes);
 app.use("/api/v1/reach", contactUsRoute);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/test", testRoutes);
+app.use("/api/test", quizRoutes);
+app.use("/api/test", testRoute);
+app.use("/api/test", categoryRoutes);
+
+app.get('/categories1', async (req, res) => {
+	console.log("GET /categories1 hit");
+	try {
+	  const categories = await QuizCategory.find({});
+	  res.json({ categories });
+	} catch (err) {
+	  console.error("Error fetching categories:", err);
+	  res.status(500).json({ message: 'Server Error' });
+	}
+  });
+  
+//.log("fdsvcx",categoryRoutes);
 
 // Default Route
 app.get("/", (req, res) => {

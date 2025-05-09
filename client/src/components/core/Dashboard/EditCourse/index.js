@@ -20,14 +20,15 @@ export default function EditCourse() {
     ;(async () => {
       setLoading(true)
       const result = await getFullDetailsOfCourse(courseId, token)
-      if (result?.courseDetails) {
+      if (result) {
         dispatch(setEditCourse(true))
-        dispatch(setCourse(result?.courseDetails))
+        dispatch(setCourse(result))
       }
       setLoading(false)
-    })()
+    })()   
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  },[])
 
   if (loading) {
     return (
@@ -39,10 +40,10 @@ export default function EditCourse() {
 
   return (
     <div>
-      <h1 className="mb-14 text-3xl font-medium text-richblack-5">
+      <h1 className="mb-14 text-3xl font-medium text-richblack-50">
         Edit Course
       </h1>
-      <div className="mx-auto max-w-[600px]">
+      <div className="mx-auto max-w-[600px]  ">
         {course ? (
           <RenderSteps />
         ) : (
