@@ -3,9 +3,12 @@ import ProgressBar from "@ramonak/react-progress-bar";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { getUserEnrolledCourses } from "../../../services/operations/profileAPI";
-
+import axios from 'axios';
 export default function EnrolledCourses() {
   const { token } = useSelector((state) => state.auth);
+ 
+
+
 
   const [enrolledCourses, setEnrolledCourses] = useState(null);
 
@@ -18,32 +21,46 @@ export default function EnrolledCourses() {
   //     console.log("Could not fetch enrolled courses.");
   //   }
   // };
+  async function getCourseProgress(courseId) {
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/user/course-progress/${courseId}`,
+        {
+          withCredentials: true, // send cookies (auth token)
+        }
+      );
+      return response.data; // expects { progressPercentage, completedCount, totalCount }
+    } catch (error) {
+      console.error(`Error fetching course progress for course ${courseId}:`, error.response?.data || error.message);
+      return null;
+    }
+  }
+  
+  // Fetch all enrolled courses and augment each with progress from API
   const getEnrolledCourses = async () => {
     try {
-      const res = await getUserEnrolledCourses(token);
-      console.log("res", res);
-    console.log("res",res);
-      const coursesWithProgress = res.map((course) => {
-        let totalSubsections = 0;
-        console.log("course",course);
-        let completedVideos = course?.courseProgress?.completedVideos || [];
-        console.log('completedVideos',completedVideos);
-        // Count total subsections in the course
-        course.sections.forEach((section) => {
-          totalSubsections += section.subSections?.length || 0;
-        });
+      // Assume this fetches the list of enrolled courses with their IDs
+      const enrolledCourses = await getUserEnrolledCourses(token); 
   
-        const progress =
-          totalSubsections > 0
-            ? Math.round((completedVideos.length / totalSubsections) * 100)
-            : 0;
+      // For each course, fetch the progress using the API
+      const coursesWithProgressPromises = enrolledCourses.map(async (course) => {
+        const progressData = await getCourseProgress(course._id);
   
-        return { ...course, progressPercentage: progress };
+        // If no progress data, default to 0
+        const progressPercentage = progressData?.progressPercentage || 0;
+  
+        return {
+          ...course,
+          progressPercentage,
+          // you can add other progress-related data here if you want
+        };
       });
+  
+      const coursesWithProgress = await Promise.all(coursesWithProgressPromises);
   
       setEnrolledCourses(coursesWithProgress);
     } catch (error) {
-      console.log("Could not fetch enrolled courses.");
+      console.log("Could not fetch enrolled courses or progress.", error);
     }
   };
   
@@ -80,6 +97,23 @@ export default function EnrolledCourses() {
           {enrolledCourses.map((course, i, arr) => {
             const sectionId = course?.sections?.[0]?._id;
             const subSectionId = course?.sections?.[0]?.subSections?.[0]?._id;
+            const handleCertificate = async (courseId) => {
+              try {
+                const response = await axios.get(`http://localhost:4000/api/v1/course/course-certificate/${courseId}`, {
+                  withCredentials: true,
+                });
+            
+                const certificateUrl = response.data?.certificateUrl;
+                if (certificateUrl) {
+                  window.open(certificateUrl, "_blank");
+                } else {
+                  alert("Certificate not available yet.");
+                }
+              } catch (error) {
+                console.error("Error fetching certificate:", error.response?.data || error.message);
+                alert("Could not fetch certificate.");
+              }
+            };
             
             // If section or subsection is missing, don't show link
             if (!sectionId || !subSectionId) return null;
@@ -117,6 +151,14 @@ export default function EnrolledCourses() {
                     height="8px"
                     isLabelVisible={false}
                   />
+                    {course.progressPercentage === 100 ? (
+    <button
+      onClick={() => handleCertificate(course._id)}
+      className="mt-2 text-sm text-yellow-400 underline"
+    >
+      View Certificate
+    </button>
+  ) : null}
                 </div>
               </div>
             );

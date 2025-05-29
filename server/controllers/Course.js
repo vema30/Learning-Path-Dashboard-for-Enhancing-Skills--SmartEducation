@@ -9,6 +9,10 @@ const User = require("../models/User");
 const path = require("path");
 const fs = require("fs");
 
+const PDFDocument = require("pdfkit");
+
+
+
 const cloudinary=require("../config/cloudinary");
 // const { uploadImageToCloudinary } = require("../utils/imageUploader")
 
@@ -534,103 +538,276 @@ const deleteCourse = async (req, res) => {
 
 // const Course = require("../models/Course"); // Assuming the Course model is imported
 // const User = require("../models/User"); // Assuming the User model is imported
+// const updateCourseProgress = async (req, res) => {
+//   const { courseId, subsectionId } = req.body;
+//   const userId = req.user.id;
+// console.log("jjhbhjbjh")
+
+//   try {
+//     // Fetch the course
+//     const course = await Course.findById(courseId).populate({
+//       path: "sections",
+//       populate: {
+//         path: "subSections",
+//       },
+//     });
+//     // course.courseProgress=100;
+//     console.log("course",course);
+
+//     if (!course) {
+//       return res.status(404).json({ message: "Course not found" });
+//     }
+
+//     console.log("gvhhgvhg")
+//     // Check if the subsection exists
+//     const subsectionExists = course.sections.some((section) =>
+//       section.subSections.some((sub) => sub._id.toString() === subsectionId)
+//     );
+
+//     if (!subsectionExists) {
+//      // return res.status(404).json({ message: "Subsection not found in course" });
+//     }
+
+//     // Find or create the CourseProgress record
+//     let progress = await CourseProgress.findOne({ userId, courseId });
+//     console.log("hey");
+//    console.log("progress",progress);
+//     // if (!progress) {
+//     //   // Create a new progress record if it doesn't exist
+//     //   progress = await CourseProgress.create({
+//     //     userId,
+//     //     courseId,
+//     //     completedSubsections: [subsectionId],
+//     //   });
+
+//     //   // Set the courseProgress field to reference the newly created progress
+//     //   course.courseProgress = progress._id;
+//     //   await course.save();
+//     // } else {
+//     //   // If progress exists, update the completed subsections
+//     //   if (progress.completedSubsections.includes(subsectionId)) {
+//     //     return res.status(400).json({ message: "Subsection already completed" });
+//     //   }
+
+//     //   progress.completedSubsections.push(subsectionId);
+//     //   await progress.save();
+//     // }
+//     if (!progress) {
+//       progress = await CourseProgress.create({
+//         userId,
+//         courseId,
+//         completedVideos: [subsectionId], // not completedSubsections
+//       });
+//     } else {
+//       if (progress.completedLectures.includes(subsectionId)) {
+//         console.log("heyy",progress)
+//    //     return res.status(400).json({ message: "Subsection already completed" });
+//       }
+    
+//       progress.completedLectures.push(subsectionId); // not completedSubsections
+//       await progress.save();
+//     }
+//     console.log("heyy",progress)
+
+//     const completedCount = progress.completedLectures.length;
+    
+//    console.log("completedCount",completedCount)
+//     // Calculate the progress percentage
+//     const allSubSections = course.sections.flatMap((section) =>
+//       section.subSections.map((sub) => sub._id.toString())
+//     );
+//     console.log("completed",allSubSections);
+//    // const completedCount = progress.completedSubsections.length;
+//     const totalCount = allSubSections.length;
+//     console.log("totalCount",totalCount);
+//     const progressPercentage = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+//     console.log("progressPercentage",progressPercentage)
+//  //   course.progressPercentage=courseProgress;
+//     courseProgress=progressPercentage;
+//     console.log("c",course);
+//     return res.status(200).json({
+//       message: "Course progress updated successfully",
+//       completedSubsections: progress.completedSubsections,
+//       progressPercentage,
+//     });
+    
+//   } catch (error) {
+//     console.error("Error updating course progress:", error);
+//     return res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };const PDFDocument = require("pdfkit");
+
+
+const getCourseCertificate = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const course = await Course.findById(courseId);
+    const progress = await CourseProgress.findOne({ courseId });
+       console.log("course",courseId);
+    if (!course || !progress) {
+      return res.status(404).json({ success: false, message: "Data not found" });
+    }
+
+    const userId = progress.userId;
+    console.log("userId", userId);
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Verify course completion
+    const totalLectures = course.sections.reduce((acc, section) => {
+      return acc + (section.subSections?.length || 0);
+    }, 0);
+
+    const completedLectures = progress.completedLectures?.length || 0;
+    const isCompleted = completedLectures >= totalLectures;
+
+    if (!isCompleted) {
+      return res.status(403).json({
+        success: false,
+        message: "Complete the course to get your certificate",
+      });
+    }
+   
+    // Build file paths
+    const fileName = `${userId}_${courseId}.pdf`;
+
+    const certDir = path.join(__dirname, ".././certificates");
+    const certPath = path.join(certDir, fileName);
+
+    if (!fs.existsSync(certDir)) {
+      fs.mkdirSync(certDir);
+    }
+
+    if (fs.existsSync(certPath)) {
+      const certificateUrl = `http://localhost:4000/certificates/${fileName}`;
+      return res.status(200).json({ success: true, certificateUrl });
+    }
+
+    // Generate PDF wrapped in Promise to wait until finished
+    await new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ size: "A4", layout: "landscape" });
+      const stream = fs.createWriteStream(certPath);
+
+      doc.pipe(stream);
+
+      doc
+        .fontSize(30)
+        .text("Certificate of Completion", { align: "center" })
+        .moveDown()
+        .fontSize(20)
+        .text("Presented to", { align: "center" })
+        .moveDown()
+        .fontSize(28)
+        .text(`${user.firstName} ${user.lastName}`, { align: "center" })
+        .moveDown()
+        .fontSize(18)
+        .text("For successfully completing the course", { align: "center" })
+        .moveDown()
+        .fontSize(22)
+        .text(`"${course.courseName}"`, { align: "center" })
+        .moveDown(2)
+        .fontSize(14)
+        .fillColor("gray")
+        .text(`Date: ${new Date().toLocaleDateString()}`, { align: "right" });
+
+      doc.end();
+
+      stream.on('finish', resolve);
+      stream.on('error', reject);
+    });
+
+    const certificateUrl = `http://localhost:4000/certificates/${fileName}`;
+    return res.status(200).json({
+      success: true,
+      message: "Certificate generated",
+      certificateUrl,
+    });
+
+  } catch (err) {
+    console.error("Error generating certificate:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+
 const updateCourseProgress = async (req, res) => {
   const { courseId, subsectionId } = req.body;
   const userId = req.user.id;
-console.log("jjhbhjbjh")
+  console.log("Start updating course progress");
 
   try {
-    // Fetch the course
+    // Fetch the course with its sections and subSections
     const course = await Course.findById(courseId).populate({
       path: "sections",
       populate: {
         path: "subSections",
       },
     });
-    // course.courseProgress=100;
-    console.log("course",course);
 
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    console.log("gvhhgvhg")
-    // Check if the subsection exists
+    // Check if the subsection exists in the course
     const subsectionExists = course.sections.some((section) =>
       section.subSections.some((sub) => sub._id.toString() === subsectionId)
     );
 
     if (!subsectionExists) {
-     // return res.status(404).json({ message: "Subsection not found in course" });
+      return res.status(404).json({ message: "Subsection not found in course" });
     }
 
-    // Find or create the CourseProgress record
+    // Find or create the CourseProgress document
     let progress = await CourseProgress.findOne({ userId, courseId });
 
-    // if (!progress) {
-    //   // Create a new progress record if it doesn't exist
-    //   progress = await CourseProgress.create({
-    //     userId,
-    //     courseId,
-    //     completedSubsections: [subsectionId],
-    //   });
-
-    //   // Set the courseProgress field to reference the newly created progress
-    //   course.courseProgress = progress._id;
-    //   await course.save();
-    // } else {
-    //   // If progress exists, update the completed subsections
-    //   if (progress.completedSubsections.includes(subsectionId)) {
-    //     return res.status(400).json({ message: "Subsection already completed" });
-    //   }
-
-    //   progress.completedSubsections.push(subsectionId);
-    //   await progress.save();
-    // }
     if (!progress) {
       progress = await CourseProgress.create({
         userId,
         courseId,
-        completedVideos: [subsectionId], // not completedSubsections
+        completedLectures: [subsectionId], // Initialize with the completed lecture
       });
     } else {
-      if (progress.completedVideos.includes(subsectionId)) {
-        console.log("heyy",progress)
-   //     return res.status(400).json({ message: "Subsection already completed" });
+      // Avoid duplicate lecture entry
+      if (!progress.completedLectures.includes(subsectionId)) {
+        progress.completedLectures.push(subsectionId);
+        await progress.save();
       }
-    
-      progress.completedVideos.push(subsectionId); // not completedSubsections
-      await progress.save();
     }
-    console.log("heyy",progress)
-    const completedCount = progress.completedVideos.length;
-    
-   console.log("completedCount",completedCount)
-    // Calculate the progress percentage
+
+    // Ensure the CourseProgress reference exists in the User document
+    const user = await User.findById(userId);
+    if (!user.courseProgress.includes(progress._id)) {
+      user.courseProgress.push(progress._id);
+      await user.save();
+    }
+   
+    // Calculate progress percentage
     const allSubSections = course.sections.flatMap((section) =>
       section.subSections.map((sub) => sub._id.toString())
     );
-    console.log("completed",allSubSections);
-   // const completedCount = progress.completedSubsections.length;
+
+    const completedCount = progress.completedLectures.length;
     const totalCount = allSubSections.length;
-    console.log("totalCount",totalCount);
-    const progressPercentage = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
-    console.log("progressPercentage",progressPercentage)
- //   course.progressPercentage=courseProgress;
-    courseProgress=progressPercentage;
-    console.log("c",course);
+    const progressPercentage =
+      totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+
+    // Respond with updated progress
     return res.status(200).json({
       message: "Course progress updated successfully",
-      completedSubsections: progress.completedSubsections,
+      completedLectures: progress.completedLectures,
       progressPercentage,
     });
-    
+
   } catch (error) {
     console.error("Error updating course progress:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 
 //module.exports = { updateCourseProgress };
@@ -644,5 +821,6 @@ module.exports = {
     editCourse,
     getInstructorCourses,
     deleteCourse,
-    updateCourseProgress
+    updateCourseProgress,getCourseCertificate,
+    getCourseCertificate
 };

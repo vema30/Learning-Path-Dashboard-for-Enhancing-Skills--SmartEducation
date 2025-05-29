@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
+
 import { useSelector } from 'react-redux'
 const CreateTests = () => {
   const [title, setTitle] = useState('')
@@ -10,6 +12,7 @@ const CreateTests = () => {
   ])
   const [categories, setCategories] = useState([])
   const { user } = useSelector((state) => state.profile);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch categories from backend (if using dynamic categories)
@@ -64,11 +67,14 @@ const CreateTests = () => {
     }
   };
   
-
+  const handleClick = () => {
+    navigate('/test-mine');
+  };
   return (
     <div className="p-6 text-black">
-      <button className='text-white bg-yellow-100 p-3 rounded-md'  >My tests</button>
-      <h1 className="text-2xl font-bold mb-4">Create New Quiz</h1>
+      <button className='text-white bg-yellow-100 p-3 rounded-md'       onClick={handleClick}
+  >My tests</button>
+      <h1 className="text-2xl font-bold text-blue-100 mb-4">Create New Quiz</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -122,7 +128,7 @@ const CreateTests = () => {
                   required
                 />
               ))}
-              <label className="block mt-2">
+              <label className="block mt-2 text-white">
                 Correct Answer Index:
                 <input
                   type="number"
@@ -132,18 +138,18 @@ const CreateTests = () => {
                   onChange={(e) =>
                     handleQuestionChange(idx, 'correctAnswerIndex', parseInt(e.target.value))
                   }
-                  className="border p-1 ml-2 w-16 rounded"
+                  className="border p-1 ml-2 w-16 rounded text-black"
                   required
                 />
               </label>
             </div>
           ))}
-          <button type="button" onClick={addQuestion} className="bg-blue-600 text-white px-4 py-2 rounded">
+          <button type="button" onClick={addQuestion} className="bg-blue-400 text-white px-4 py-2 rounded">
             Add Question
           </button>
         </div>
         <div className='flex justify-center items-center'>
-        <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded bg-caribbeangreen-400 hover:bg-caribbeangreen-600 ">
+        <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded bg-blue-100 hover:bg-blue-400 ">
           Create Quiz
         </button>
         </div>

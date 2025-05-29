@@ -10,6 +10,7 @@ const {auth} = require("./middlewares/auth");
 const stringSimilarity = require('string-similarity');
 const QuizCategory = require('./models/QuizCategory');
 // Config
+
 require("dotenv").config();
 const PORT = process.env.PORT || 4000;
   // This should be added before defining your routes
@@ -49,11 +50,101 @@ app.use(cors({
 app.use(fileUpload());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/videos", express.static(path.join(__dirname, "uploads/videos")));
+app.use('/certificates', express.static(path.join(__dirname, 'certificates')));
 
 // Connect Cloudinary
 cloudinaryConnect();
 
 // Route Mounting
+// const { OpenAI } = require("openai");
+
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
+
+
+
+  
+// app.post('/api/chat', async (req, res) => {
+// 	const { message } = req.body; // Chat message from user
+  
+// 	try {
+// 	  const response = await openai.chat.completions.create({
+// 		model: 'gpt-3.5-turbo',
+// 		messages: [{ role: 'user', content: message }],
+// 	  });
+  
+// 	  const chatResponse = response.choices[0].message.content;
+// 	  res.json({ message: chatResponse });
+// 	} catch (error) {
+// 	  console.error(error);
+// 	  res.status(500).json({ error: 'Failed to get response from ChatGPT' });
+// 	}
+//   });
+  
+const Course = require("./models/Course");
+const CourseProgress = require("./models/CourseProgress");
+
+// GET course progress percentage for a user by course ID
+app.get("/user/course-progress/:courseId",async (req, res) => {
+	//console.log("GET /user/course-progress/:courseId hit");
+	//const courseId="681f9903d8677ba2fcd7d050"
+ //const userId = req.user.id;
+  const { courseId } = req.params;
+
+  try {
+    const course = await Course.findById(courseId).populate({
+      path: "sections",
+      populate: {
+        path: "subSections",
+        select: "_id"
+      }
+    });
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    const allSubSectionIds = course.sections.flatMap((section) =>
+      section.subSections.map((sub) => sub._id.toString())
+    );
+
+    const totalCount = allSubSectionIds.length;
+
+    if (totalCount === 0) {
+      return res.status(200).json({ progressPercentage: 0 });
+    }
+
+    const progress = await CourseProgress.findOne({  courseId });
+
+    if (!progress || !progress.completedLectures.length) {
+      return res.status(200).json({ progressPercentage: 0 });
+    }
+
+    const uniqueCompleted = [...new Set(progress.completedLectures.map(id => id.toString()))];
+    const validCompleted = uniqueCompleted.filter(id => allSubSectionIds.includes(id));
+
+    const completedCount = validCompleted.length;
+    const progressPercentage = Math.round((completedCount / totalCount) * 100);
+
+    return res.status(200).json({
+      progressPercentage,
+      completedCount,
+      totalCount
+    });
+
+  } catch (error) {
+    console.error("Error fetching course progress:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+app.get("/hey", async (req, res) => {
+	console.log("hey");
+	res.send("hey");
+  });
+  
+
+
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/course", courseRoutes);

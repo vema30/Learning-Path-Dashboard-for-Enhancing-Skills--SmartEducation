@@ -12,7 +12,7 @@ const {
   editCourse,
   getInstructorCourses,
   deleteCourse, 
-  updateCourseProgress
+  updateCourseProgress,getCourseCertificate,
 } = require("../controllers/Course");
 
 const {
@@ -109,6 +109,8 @@ router.put("/courses/:courseId", auth, isInstructor, editCourse);
 
 // Get all Courses Under a Specific Instructor
 router.get("/instructor/courses", auth, isInstructor, getInstructorCourses);
+//certificate
+router.get("/course-certificate/:courseId", getCourseCertificate);
 
 // Delete a Course
 router.delete("/courses/:courseId", deleteCourse);

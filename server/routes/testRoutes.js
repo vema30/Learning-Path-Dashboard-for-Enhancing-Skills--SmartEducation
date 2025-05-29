@@ -5,6 +5,56 @@ const Quiz = require('../models/Quiz')
 
 // Submit a test
 // GET /api/test/instructor/:instructorId
+
+// GET /api/test/taken?userId=...
+router.get("/taken", async (req, res) => {
+  try {
+    const { userId } = req.query; // ✅ this is correct for GET with query params
+
+    if (!userId) {
+      return res.status(400).json({ error: "userId query parameter is required" });
+    }
+
+    const user = await User.findById(userId)
+      .populate("takenTests.quizId")
+      .select("takenTests");
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ takenTests: user.takenTests });
+  } catch (err) {
+    console.error("Error fetching taken tests:", err);
+    res.status(500).json({ error: "Failed to fetch taken tests" });
+  }
+});
+// DELETE /api/test/taken/:userId/:quizId
+router.delete("/taken/:userId/:quizId", async (req, res) => {
+  try {
+    const { userId, quizId } = req.params;
+
+    // Find user and remove quiz from takenTests array
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { takenTests: { quizId: quizId } } }, // Remove quizId from takenTests array
+      { new: true }
+    );
+
+    res.status(200).json(updatedUser.takenTests); // Return updated tests
+  } catch (err) {
+    console.error("Error deleting test:", err);
+    res.status(500).json({ error: "Failed to delete test" });
+  }
+});
+
+
 router.get('/instructor/:instructorId', async (req, res) => {
   try {
     const { instructorId } = req.params;

@@ -1,4 +1,3 @@
-
 import { useDispatch, useSelector } from "react-redux"
 import { Table, Tbody, Td, Th, Thead, Tr } from "react-super-responsive-table"
 import { FaCheck } from "react-icons/fa"
@@ -14,6 +13,7 @@ import {
 } from "../../../../services/operations/courseDetailsAPI"
 import { COURSE_STATUS } from "../../../../utils/constants"
 import ConfirmationModal from "../../../common/ConfirmationModal"
+import { setEditCourse } from "../../../../slices/courseSlice"
 
 export default function CoursesTable({ courses, setCourses }) {
   const dispatch = useDispatch()
@@ -109,35 +109,39 @@ export default function CoursesTable({ courses, setCourses }) {
                   ₹{course.price}
                 </Td>
                 <Td className="text-sm font-medium text-richblack-100 ">
+                  <div className="flex items-center gap-x-4">
                   <Link
-                    to={`/dashboard/edit-course/${course._id}`}
-                    title="Edit"
-                    className="px-2 transition-all duration-200 hover:scale-110 hover:text-caribbeangreen-300"
-                  >
-                    <FiEdit2 size={20} />
-                  </Link>
-                  <button
-                    disabled={loading}
-                    onClick={() => {
-                      setConfirmationModal({
-                        text1: "Do you want to delete this course?",
-                        text2:
-                          "All the data related to this course will be deleted",
-                        btn1Text: !loading ? "Delete" : "Loading...  ",
-                        btn2Text: "Cancel",
-                        btn1Handler: !loading
-                          ? () => handleCourseDelete(course._id)
-                          : () => {},
-                        btn2Handler: !loading
-                          ? () => setConfirmationModal(null)
-                          : () => {},
-                      })
-                    }}
-                    title="Delete"
-                    className="px-1 transition-all duration-200 hover:scale-110 hover:text-[#ff0000]"
-                  >
-                    <RiDeleteBin6Line size={20} />
-                  </button>
+  to={`/dashboard/edit-course/${course._id}`}
+  title="Edit"
+  className="p-1 transition-transform duration-200 hover:scale-110 hover:text-caribbeangreen-300 cursor-pointer"
+  onClick={() => dispatch(setEditCourse(true))}
+>
+  <FiEdit2 size={20} />
+</Link>
+
+
+                    <button
+                      disabled={loading}
+                      onClick={() => {
+                        setConfirmationModal({
+                          text1: "Do you want to delete this course?",
+                          text2: "All the data related to this course will be deleted",
+                          btn1Text: !loading ? "Delete" : "Loading...  ",
+                          btn2Text: "Cancel",
+                          btn1Handler: !loading
+                            ? () => handleCourseDelete(course._id)
+                            : () => {},
+                          btn2Handler: !loading
+                            ? () => setConfirmationModal(null)
+                            : () => {},
+                        })
+                      }}
+                      title="Delete"
+                      className="p-1 transition-transform duration-200 hover:scale-110 hover:text-[#ff0000] cursor-pointer"
+                    >
+                      <RiDeleteBin6Line size={20} />
+                    </button>
+                  </div>
                 </Td>
               </Tr>
             ))

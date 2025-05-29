@@ -42,6 +42,7 @@ import MyTests from './components/pages/Tests/MyTests'
 import TestDetails from './components/pages/Tests/TestDetails'
 import TestResult from './components/pages/Tests/TestResult'
 import QuizDetails from "./components/pages/Tests/QuizDetails";
+import Chatbot from "./components/Chatbot";
 const App = () => { 
    const { user } = useSelector((state) => state.profile)
    console.log("hi",user?.accountType, ACCOUNT_TYPE.STUDENT);
@@ -49,9 +50,9 @@ const App = () => {
 
   return (
     <div className="flex flex-col w-screen min-h-screen bg-richblue-900 text-white justify-between">
-
-      <Navbar />
     
+      <Navbar />
+      
       
      {/* { <Recommendation/>} */}
      
@@ -110,6 +111,7 @@ const App = () => {
       </Routes>
        
       <Footer />
+     
     </div>
   );
 };

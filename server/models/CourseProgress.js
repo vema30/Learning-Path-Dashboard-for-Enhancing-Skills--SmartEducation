@@ -12,11 +12,13 @@ const CourseProgressSchema = new Schema({
     ref: "Course",
     required: true
   },
-  completedVideos: [{
-    type: mongoose.Schema.Types.ObjectId,
+  completedLectures: {
+    type: [mongoose.Schema.Types.ObjectId],
     ref: "SubSection",
     default: []
-  }]
+  }
+  
+
 });
 
 // Compile model from schema

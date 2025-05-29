@@ -170,14 +170,15 @@ const login = async (req, res) => {
             { expiresIn: "2d" }  // Token expiration time (2 days)
         );
 
+         console.log("token",token);
         // Remove password from user object before sending back to client
         user.password = undefined;
 
         // Set the token in the HTTP-only cookie
         res.cookie("token", token, {
             expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),  // 2 days expiration
-            httpOnly: true,  // Prevent client-side JS from accessing the cookie
-            secure: process.env.NODE_ENV === "production",  // Only set 'secure' flag in production
+  // Prevent client-side JS from accessing the cookie
+           
         });
 
         // Respond with success and the user info

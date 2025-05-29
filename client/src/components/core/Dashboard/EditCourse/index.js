@@ -32,7 +32,7 @@ export default function EditCourse() {
 
   if (loading) {
     return (
-      <div className="grid flex-1 place-items-center">
+      <div className="grid flex-1 place-items-center text-black">
         <div className="spinner"></div>
       </div>
     )
@@ -40,14 +40,14 @@ export default function EditCourse() {
 
   return (
     <div>
-      <h1 className="mb-14 text-3xl font-medium text-richblack-50">
+      <h1 className="mb-14 text-3xl font-medium text-black">
         Edit Course
       </h1>
-      <div className="mx-auto max-w-[600px]  ">
+      <div className="mx-auto max-w-[600px] text-black  ">
         {course ? (
           <RenderSteps />
         ) : (
-          <p className="mt-14 text-center text-3xl font-semibold text-richblack-100">
+          <p className="mt-14 text-center text-3xl font-semibold text-black">
             Course not found
           </p>
         )}

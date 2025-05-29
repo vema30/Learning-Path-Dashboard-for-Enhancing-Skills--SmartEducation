@@ -31,7 +31,6 @@ router.post("/signup", signUp);
 
 // Route for sending OTP to the user's email
 router.post("/send-otp", sendOTP); // Changed from "/sendotp" to "/send-otp"
-
 // Route for Changing the password
 router.put("/change-password", auth, changePassword); // Changed from "/changepassword" to "/change-password"
 

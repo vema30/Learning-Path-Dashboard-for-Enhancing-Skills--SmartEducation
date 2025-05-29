@@ -36,14 +36,15 @@ const userSchema = new Schema({
            type: mongoose.Schema.Types.ObjectId,
            ref: "Course"
        }],
-       completedLectures: [
-  {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "SubSection",    unique: true,
+//        completedLectures: [
+//   {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: "SubSection",    
+    
 
-  }
-]
-,
+//   }
+// ]
+
        image: {
            type: String
        },
@@ -55,7 +56,8 @@ const userSchema = new Schema({
        },
        courseProgress: [{
            type: mongoose.Schema.Types.ObjectId,
-           ref: "CourseProgress"
+           ref: "CourseProgress",
+           
        }],
        takenTests: [
         {

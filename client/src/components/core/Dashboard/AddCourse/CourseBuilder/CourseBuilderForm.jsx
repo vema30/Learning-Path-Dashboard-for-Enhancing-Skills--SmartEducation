@@ -357,6 +357,7 @@ export default function CourseBuilderForm() {
     let result;
 
     if (editSectionName) {
+      console.log("course",course._id);
       result = await updateSection(
         {
           sectionName: data.sectionName,

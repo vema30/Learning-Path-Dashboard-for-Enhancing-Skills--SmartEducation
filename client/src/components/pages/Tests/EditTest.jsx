@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-
+import { useNavigate } from 'react-router-dom';
 const EditTest = () => {
   const { testId } = useParams();
   const [quiz, setQuiz] = useState(null);
   const [categories, setCategories] = useState([]);
-
+  const navigate=useNavigate();
   useEffect(() => {
     axios.get(`http://localhost:4000/api/test/${testId}`).then(res => setQuiz(res.data));
     axios.get('http://localhost:4000/categories1').then(res => setCategories(res.data.categories));
@@ -38,6 +38,7 @@ const EditTest = () => {
   const handleSubmit = async () => {
     await axios.put(`http://localhost:4000/api/test/${testId}`, quiz);
     alert('Test updated successfully!');
+    navigate('/test-mine')
   };
 
   if (!quiz) return <div>Loading...</div>;

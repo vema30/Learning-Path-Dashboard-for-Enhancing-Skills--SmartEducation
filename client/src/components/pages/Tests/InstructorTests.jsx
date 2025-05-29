@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FaTrashAlt } from 'react-icons/fa'; // Importing delete icon from react-icons
-
 const InstructorTests = () => {
   const { user } = useSelector((state) => state.profile);
   const [tests, setTests] = useState([]);
@@ -34,7 +33,7 @@ const InstructorTests = () => {
 
   return (
     <div className="p-6 text-white">
-      <h2 className="text-3xl font-bold mb-6">Your Created Tests</h2>
+      <h2 className="text-3xl font-bold text-center mb-6"> Tests created by you</h2>
 
       {/* Display message if no tests are available */}
       {tests.length === 0 ? (
@@ -46,27 +45,30 @@ const InstructorTests = () => {
           {tests.map((test) => (
             <div
               key={test._id}
-              className="relative border rounded-lg p-4 shadow bg-white cursor-pointer hover:bg-gray-50 transition"
+              className="relative border rounded-lg p-4 shadow cursor-pointer hover:bg-richblack-700 transition"
               onClick={() => navigate(`/edit-test/${test._id}`)}
             >
               <img
                 src={test.image}
                 alt={test.title}
-                className="w-full h-40 object-cover rounded mb-3"
+                className="w-full h-40 object-fit rounded mb-3 p-4"
               />
               <h3 className="text-xl font-semibold mb-2">{test.title}</h3>
               <p className="text-gray-600">Category: {test.category?.name}</p>
               <p className="text-gray-500 text-sm">{test.questions.length} questions</p>
-              <button
+              <div><button
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevent triggering the onClick for the div
+                  e.stopPropagation();
                   handleDelete(test._id);
                 }}
-                className="absolute top-2 right-2 text-red-600 hover:text-red-800"
+                className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-all duration-200 shadow-md hover:scale-105"
+                title="Delete test"
               >
-                <FaTrashAlt size={20} />
+                <FaTrashAlt size={16} />
               </button>
+</div>
             </div>
+
           ))}
         </div>
       )}

@@ -6,18 +6,20 @@ const User = require("../models/User");
 const auth = async (req, res, next) => {
     try {
         // Extract token from Authorization header or cookies (strongly prefer these two sources)
+        const authHeader = req.header("Authorization");
+        console.log("authHeader in backend ",req.cookies);
         const token =
-			req.cookies.token ||
-			req.body.token ||
-			req.header("Authorization").replace("Bearer ", "");
+          req.cookies.token ||
+          req.body.token ||
+          (authHeader && authHeader.startsWith("Bearer ") ? authHeader.replace("Bearer ", "") : null);
 
-            console.log("token in backend ",token);
-        if (!token) {
-            return res.status(401).json({
-                success: false,
-                message: "Access Denied: No token provided",
-            });
-        }console.log('token in auth ',token);
+            console.log("token in backend : ",token);
+        // if (!token) {
+        //     return res.status(401).json({
+        //         success: false,
+        //         message: "Access Denied: No token provided",
+        //     });
+        // }console.log('token in auth ',token);
 
         // Verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
