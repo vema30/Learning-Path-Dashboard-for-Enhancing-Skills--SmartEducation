@@ -17,7 +17,7 @@ const store = configureStore({
 
 // Create React root
 const root = ReactDOM.createRoot(document.getElementById("root"));
-
+  
 root.render(
   <Provider store={store}>
     <BrowserRouter>

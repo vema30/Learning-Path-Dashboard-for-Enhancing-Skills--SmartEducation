@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import CommentSection from './CommentSection';
+import { useDispatch, useSelector } from "react-redux";
 
 export default function BlogItem({ post, onDelete }) {
   const [likes, setLikes] = useState(post.likes || []);  // Ensure likes is an array
   const [currentUser, setCurrentUser] = useState(null);
+  const user = useSelector((state) => state.profile.user);
+  const isInstructor = user && user.accountType === 'Instructor';
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -61,43 +64,46 @@ export default function BlogItem({ post, onDelete }) {
     alert('Link copied!');
   };
 
-  const canDelete =
-    currentUser &&
-    currentUser.role === 'Instructor';
  console.log("hh",post);
   return (
-    <div id={`post-${post._id}`} className="flex-col bg-white border border-gray-300 rounded-2xl shadow-md p-6 mb-6 justify-between">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-2">{post.title}</h2>
-      <p className="text-gray-700 mb-4">{post.content}</p>
+    <div id={`post-${post._id}`} 
+    className="flex flex-col bg-white border border-gray-200 rounded-2xl shadow-lg p-6 mb-6 transition hover:shadow-xl duration-300 ">
+      <h2 className="text-2xl font-bold text-gray-900 mb-2 ">{post.title}</h2>
+      <p className="text-gray-700 text-base line-clamp-3  mb-4">{post.content}</p>
        
       {post.image && (
         <img
-          src={`http://localhost:4000/${post.image}`}
-          alt=""
-          className="w-full max-w-md object-cover rounded-xl shadow-sm mb-4"
-        />
+        src={
+          post.image.startsWith('http')
+            ? post.image  // external hosted image like Cloudinary
+            : `http://localhost:4000/uploads/${post.image}` // local file fallback
+        }
+                alt=""
+                className="w-full h-48 object-cover rounded-xl mb-4"
+                />
       )}
 
-      <div className="flex items-center space-x-4 mb-4">
-        <button
+<div className="flex items-center justify-between text-sm text-gray-500">
+<button
           onClick={() => handleLike(post._id)}
-          className="flex items-center text-red-600 hover:text-red-800 transition"
+          className="flex items-center text-sm text-red-600 hover:text-red-700 font-medium"
+
         >
           ❤️ <span className="ml-1">{likes.length}</span>  {/* Show number of likes */}
         </button>
 
         <button
           onClick={share}
-          className="text-blue-600 hover:text-blue-800 transition"
+          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
         >
           🔗 Share
         </button>
 
-        {canDelete && (
+        {isInstructor &&  (
           <button
             onClick={handleDelete}
-            className="text-red-500 hover:text-red-700 transition ml-auto"
-          >
+            className="text-sm text-red-500 hover:text-red-700 font-medium ml-auto"
+            >
             🗑️ Delete
           </button>
         )}

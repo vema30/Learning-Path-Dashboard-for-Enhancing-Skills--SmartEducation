@@ -29,13 +29,13 @@ const Articles = () => {
     <h1 className="text-2xl font-bold mb-4 text-center bg-white p-4 rounded-xl shadow">
       Read Blogs for Fun 🎉
     </h1>
-    <input
+    {/* <input
       type="text"
       placeholder="Search posts..."
       className="border p-2 mb-4 w-full rounded-xl shadow"
       value={query}
       onChange={(e) => setQuery(e.target.value)}
-    />
+    /> */}
   </>
 )}
 <BlogList/>

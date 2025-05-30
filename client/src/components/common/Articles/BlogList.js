@@ -42,13 +42,13 @@ const BlogList = ({ searchQuery }) => {
   if (error) return <div>Error: {error}</div>;  // Error state
 
   return (
-    <div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-8 mt-6">
       {posts.length > 0 ? (
         posts.map(post => (
           <BlogItem key={post._id} post={post} onDelete={handleDelete} />
         ))
       ) : (
-        <div>No posts found</div>  // Display message when no posts found
+        <div className="text-center text-gray-500 col-span-full mt-8 text-lg">No posts found</div>
       )}
     </div>
   );

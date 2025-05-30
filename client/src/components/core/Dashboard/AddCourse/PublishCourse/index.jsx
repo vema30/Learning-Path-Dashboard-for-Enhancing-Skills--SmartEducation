@@ -73,7 +73,7 @@ export default function PublishCourse() {
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* Checkbox for Publish Setting */}
         <div className="my-6">
-          <label className="inline-flex items-center text-lg text-richblack-400">
+          <label className="inline-flex items-center text-lg text-richblack-50">
             <input
               type="checkbox"
               {...register("public")}
@@ -91,11 +91,11 @@ export default function PublishCourse() {
             disabled={loading}
             type="button"
             onClick={goBack}
-            className="flex cursor-pointer items-center gap-x-2 rounded-md bg-richblack-300 py-[8px] px-[20px] font-semibold text-richblack-900"
+            className="flex cursor-pointer items-center gap-x-2 rounded-md hover:bg-white bg-richblack-50 py-[8px] px-[20px] font-semibold text-richblack-900"
           >
             Back
           </button>
-          <button  onClick={handleSubmit(onSubmit)}>save changes</button>
+          <button className="bg-yellow-25 py-[8px] hover:bg-yellow-50 px-[20px] rounded-md" onClick={handleSubmit(onSubmit)}>save changes</button>
        {/* {   <IconBtn disabled={loading} text="Save Changes" onclick={handleSubmit(onSubmit)} />} */}
         </div>
       </form>
