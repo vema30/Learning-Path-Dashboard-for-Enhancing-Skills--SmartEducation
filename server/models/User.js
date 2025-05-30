@@ -36,14 +36,14 @@ const userSchema = new Schema({
            type: mongoose.Schema.Types.ObjectId,
            ref: "Course"
        }],
-//        completedLectures: [
-//   {
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: "SubSection",    
+       completedLectures: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "SubSection",    
     
 
-//   }
-// ]
+  }
+],
 
        image: {
            type: String

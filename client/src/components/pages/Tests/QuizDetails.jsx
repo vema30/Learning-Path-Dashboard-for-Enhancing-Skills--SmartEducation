@@ -9,7 +9,7 @@ const QuizDetails = () => {
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [timer, setTimer] = useState(10); // Timer in seconds (20 minutes)
+  const [timer, setTimer] = useState(60*20); // Timer in seconds (20 minutes)
   const [isTimeUp, setIsTimeUp] = useState(false);
   const navigate = useNavigate();
 

@@ -58,7 +58,7 @@ const MyTests = () => {
             <img
               src={quiz.image}
               alt={quiz.title}
-              className="w-full h-40 object-fit"
+              className="w-40 h-40 object-fit p-4 flex"
             />
             <div className="p-4">
               <h2 className="text-xl font-semibold text-blue-600">{quiz.title}</h2>

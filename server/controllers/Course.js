@@ -671,11 +671,12 @@ const getCourseCertificate = async (req, res) => {
         message: "Complete the course to get your certificate",
       });
     }
-   
+  
     // Build file paths
+ 
     const fileName = `${userId}_${courseId}.pdf`;
 
-    const certDir = path.join(__dirname, ".././certificates");
+    const certDir = path.join(__dirname, "../certificates");
     const certPath = path.join(certDir, fileName);
 
     if (!fs.existsSync(certDir)) {
@@ -738,10 +739,11 @@ const getCourseCertificate = async (req, res) => {
 const updateCourseProgress = async (req, res) => {
   const { courseId, subsectionId } = req.body;
   const userId = req.user.id;
+
   console.log("Start updating course progress");
 
   try {
-    // Fetch the course with its sections and subSections
+    // Fetch course and its subsections
     const course = await Course.findById(courseId).populate({
       path: "sections",
       populate: {
@@ -753,50 +755,51 @@ const updateCourseProgress = async (req, res) => {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    // Check if the subsection exists in the course
+    // Validate that the subsection exists in the course
     const subsectionExists = course.sections.some((section) =>
-      section.subSections.some((sub) => sub._id.toString() === subsectionId)
+      section.subSections.some(
+        (sub) => sub._id.toString() === subsectionId
+      )
     );
 
     if (!subsectionExists) {
       return res.status(404).json({ message: "Subsection not found in course" });
     }
 
-    // Find or create the CourseProgress document
+    // Find or create course progress
     let progress = await CourseProgress.findOne({ userId, courseId });
 
     if (!progress) {
       progress = await CourseProgress.create({
         userId,
         courseId,
-        completedLectures: [subsectionId], // Initialize with the completed lecture
+        completedLectures: [subsectionId],
       });
     } else {
-      // Avoid duplicate lecture entry
       if (!progress.completedLectures.includes(subsectionId)) {
         progress.completedLectures.push(subsectionId);
         await progress.save();
       }
     }
 
-    // Ensure the CourseProgress reference exists in the User document
+    // Add progress reference to user if not already present
     const user = await User.findById(userId);
     if (!user.courseProgress.includes(progress._id)) {
       user.courseProgress.push(progress._id);
       await user.save();
     }
-   
-    // Calculate progress percentage
+
+    // Calculate percentage
     const allSubSections = course.sections.flatMap((section) =>
       section.subSections.map((sub) => sub._id.toString())
     );
 
     const completedCount = progress.completedLectures.length;
     const totalCount = allSubSections.length;
+
     const progressPercentage =
       totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
 
-    // Respond with updated progress
     return res.status(200).json({
       message: "Course progress updated successfully",
       completedLectures: progress.completedLectures,

@@ -10,7 +10,7 @@ const {auth} = require("./middlewares/auth");
 const stringSimilarity = require('string-similarity');
 const QuizCategory = require('./models/QuizCategory');
 // Config
-
+const cloudinary = require('cloudinary').v2;
 require("dotenv").config();
 const PORT = process.env.PORT || 4000;
   // This should be added before defining your routes
@@ -48,6 +48,9 @@ app.use(cors({
  
 }));
 app.use(fileUpload());
+
+app.use('/uploads/images', express.static(path.join(__dirname, 'uploads/images')));
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/videos", express.static(path.join(__dirname, "uploads/videos")));
 app.use('/certificates', express.static(path.join(__dirname, 'certificates')));
@@ -180,12 +183,12 @@ app.get("/", (req, res) => {
 // Multer setup for blog image uploads
 //const multer = require("multer");
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
-});
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => cb(null, "uploads/images"),
+//   filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+// });
 
-const upload = multer({ storage });
+// const upload = multer({ storage });
 
 app.delete('/api/posts/:id', async (req, res) => {
 	try {
@@ -208,21 +211,86 @@ app.delete('/api/posts/:id', async (req, res) => {
 	  res.status(500).json({ message: 'Internal Server Error' });
 	}
   });
+  const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+app.post('/api/posts',  async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'Image file is required' });
+    }
+
+    // Upload buffer to Cloudinary
+    const result = await cloudinary.uploader.upload_stream(
+      { folder: 'posts' },
+      async (error, result) => {
+        if (error) {
+          console.error('Cloudinary upload error:', error);
+          return res.status(500).json({ error: 'Cloudinary upload failed' });
+        }
+
+        // Save post with Cloudinary URL
+        const post = new Post({
+          title,
+          content,
+          image: result.secure_url,
+        });
+
+        await post.save();
+        return res.status(200).json(post);
+      }
+    );
+
+    // Pipe the file buffer to the upload stream
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'posts' },
+      (error, result) => {
+        if (error) {
+          console.error('Cloudinary upload error:', error);
+          return res.status(500).json({ error: 'Cloudinary upload failed' });
+        }
+        
+        // Save post with Cloudinary URL
+        const post = new Post({
+          title,
+          content,
+          image: result.secure_url,
+        });
+
+        post.save().then(() => {
+          res.status(200).json(post);
+        });
+      }
+    );
+
+    stream.end(req.file.buffer);
+
+  } catch (err) {
+    console.error('Post creation error:', err);
+    res.status(500).json({ error: "Post creation failed", details: err.message });
+  }
+});
+
 // Blog API Routes
-app.post('/api/posts', upload.single('image'), async (req, res) => {
-	try {
-	  const { title, content } = req.body;
-	  const image = req.file ? req.file.path : null;
-   console.log(image);
-	  const post = new Post({ title, content, image });
-	  await post.save();
+// app.post('/api/posts',upload.single('image'),   async (req, res) => {
+// 	console.log("hey");
+// 	console.log("req.body",req.body);
+// 	console.log("req.file",req.file);
+// 	try {
+// 	  const { title, content } = req.body;
+// 	  const image = req.file ? req.file.path : null;
+//    console.log(image);
+// 	  const post = new Post({ title, content, image });
+// 	  await post.save();
   
-	  res.status(200).json(post);
-	} catch (err) {
-	  console.error(err);
-	  res.status(500).json({ error: "Post creation failed", details: err.message });
-	}
-  });
+// 	  res.status(200).json(post);
+// 	} catch (err) {
+// 	  console.error(err);
+// 	  res.status(500).json({ error: "Post creation failed", details: err.message });
+// 	}
+//   });
   
 
   app.get("/api/posts", async (req, res) => {
@@ -298,18 +366,24 @@ app.post('/api/posts/:postId/like', async (req, res) => {
 
 app.get('/search', async (req, res) => {
 	try {
-		console.log("r",req.query)
 	  const { query } = req.query;
 	  if (!query) return res.status(400).json({ message: 'Query required' });
   
 	  const posts = await Post.find({});
+	  if (!posts.length) return res.status(200).json({ message: 'No posts available' });
+  
 	  const scoredPosts = posts.map(post => {
-		const score = stringSimilarity.compareTwoStrings(query, post.title + ' ' + post.content);
+		const score = stringSimilarity.compareTwoStrings(
+		  query.toLowerCase(),
+		  (post.title + ' ' + post.content).toLowerCase()
+		);
 		return { ...post.toObject(), score };
 	  });
   
+	  scoredPosts.forEach(p => console.log(`Score for "${p.title}":`, p.score));
+  
 	  const filtered = scoredPosts
-		.filter(post => post.score > 0.2)
+		.filter(post => post.score > 0.05)
 		.sort((a, b) => b.score - a.score);
   
 	  res.json(filtered);
@@ -318,6 +392,7 @@ app.get('/search', async (req, res) => {
 	  res.status(500).json({ message: 'Server error' });
 	}
   });
+  
  
   
   

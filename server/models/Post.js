@@ -15,10 +15,10 @@ const PostSchema = new mongoose.Schema({
   title: String,
   content: String,
   likes: {
-    type: [String],  // Change this to [String] to store timestamp-based likes
+    type: [String], // or [mongoose.Schema.Types.ObjectId] if you're storing actual User IDs
     default: []
-  },
-  image:String
+  }
+,      image:String
 });
 
 const Post = mongoose.model('Post', PostSchema);

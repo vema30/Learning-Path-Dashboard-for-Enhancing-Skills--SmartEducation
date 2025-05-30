@@ -47,7 +47,7 @@ export default function BlogForm() {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title"
-        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-full p-3 border border-gray-300  rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
         required
       />
 
@@ -56,7 +56,7 @@ export default function BlogForm() {
         onChange={(e) => setContent(e.target.value)}
         placeholder="Content"
         rows="6"
-        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none  focus:ring-2 focus:ring-blue-400"
         required
       />
 
