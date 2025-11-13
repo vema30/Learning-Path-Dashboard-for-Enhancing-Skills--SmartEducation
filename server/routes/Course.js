@@ -12,7 +12,7 @@ const {
   editCourse,
   getInstructorCourses,
   deleteCourse, 
-  updateCourseProgress
+  updateCourseProgress,markLectureAsComplete
 } = require("../controllers/Course");
 
 const {
@@ -55,6 +55,25 @@ const { auth, isInstructor, isStudent, isAdmin } = require("../middlewares/auth"
 
 // Courses can only be created by Instructors
 // Example: http://localhost:4000/api/v1/course/createCourse
+// Endpoint to refresh the access token
+router.post("/refresh-token", async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(400).send("Refresh token required");
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const newAccessToken = jwt.sign(
+      { id: decoded.id, email: decoded.email, role: decoded.role },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "15m" } // or any expiration time you prefer
+    );
+    res.json({ accessToken: newAccessToken });
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    res.status(401).send("Invalid refresh token");
+  }
+});
+
 router.post("/createCourse", auth, isInstructor, createCourse)
 router.put('/editCourse',auth,isInstructor,editCourse);
 // Add a Section to a Course
@@ -65,6 +84,7 @@ router.put("/sections/:sectionId", auth, isInstructor, updateSection);
 
 // Delete a Section
 router.delete("/sections/:sectionId", auth, isInstructor, deleteSection);
+router.put('/updateCourseProgress', updateCourseProgress);
 
 // Edit Sub Section
 router.put("/subsections/:subSectionId", auth, isInstructor, updateSubSection);
@@ -92,32 +112,45 @@ router.post(
 );
 
 // Get all Registered Courses
-router.get("/courses", showAllCourses);
 
 // Get Details for a Specific Course
-router.get("/courses/:courseId", getCourseDetails);
 
 // Get Full Details for a Specific Course
-router.get("/courses/:courseId/full-details", auth, getFullCourseDetails);
 
 // Edit Course routes
-router.put("/courses/:courseId", auth, isInstructor, editCourse);
 
 // Get all Courses Under a Specific Instructor
 router.get("/instructor/courses", auth, isInstructor, getInstructorCourses);
+// For updating a section
+router.post("/updateSection",auth, updateSection);
+
+router.post("/mark-lecture-complete", auth, isStudent, markLectureAsComplete);
+
 
 // Delete a Course
-router.delete("/courses/:courseId", deleteCourse);
-router.post("/course/updateCourseProgress", auth, isStudent, updateCourseProgress);
 
 // ********************************************************************************************************
 //                                      Category Routes (Only by Admin)
 // ********************************************************************************************************
 router.post("/categories", auth, isAdmin, createCategory);
-router.get("/categories", showAllCategories); 
-router.post("/categories1", categoryPageDetails); 
+router.get("/categories",auth, showAllCategories); 
+router.post("/categories1",auth, categoryPageDetails); 
 
-router.get("/categories/:categoryId", categoryPageDetails);
+router.get("/categories/:categoryId",auth, categoryPageDetails);
+router.get("/courses",auth, showAllCourses);
+router.get("/:courseId", auth, getFullCourseDetails);
+router.put("/courses/:courseId", auth, isInstructor, editCourse);
+router.delete("/courses/:courseId",auth, deleteCourse);
+
+router.post("/courses/editCourse",auth, editCourse);
+router.post("/course/updateCourseProgress", auth, isStudent, updateCourseProgress);
+
+// Add a Section to a Course
+router.post("/courses/:courseId/sections", auth, isInstructor, createSection);
+
+// Now dynamic route at LAST
+router.get("/:courseId",auth, getCourseDetails);
+
 ///http://localhost:4000/api/v1/course/getCategoryPageDetails
 // ********************************************************************************************************
 //                                      Rating and Review Routes

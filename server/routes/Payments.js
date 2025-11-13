@@ -1,16 +1,15 @@
 const express = require("express");
+const { capturePayment, verifyPayment, sendPaymentSuccessEmail } = require("../controllers/Payments");
+const { auth } = require("../middlewares/auth"); // if you have authentication middleware
 const router = express.Router();
 
-const { capturePayment, verifyPayment, sendPaymentSuccessEmail } = require("../controllers/Payments");
-const { auth, isInstructor, isStudent, isAdmin } = require("../middlewares/auth");
+// Capture Payment - create Razorpay order
+router.post("/order", capturePayment);
 
-// Capture Payment Route
-router.post("/capturePayment", auth, isStudent, capturePayment);
+// Verify Payment after success
+router.post("/verify", verifyPayment);
 
-// Verify Payment Route
-router.post("/verifyPayment", auth, isStudent, verifyPayment);
-
-// Send Payment Success Email Route
-router.post("/sendPaymentSuccessEmail", auth, isStudent, sendPaymentSuccessEmail);
+// (Optional) Send success email after verified payment
+router.post("/send-email", sendPaymentSuccessEmail);
 
 module.exports = router;

@@ -35,20 +35,22 @@ exports.createCategory = async (req, res) => {
 
 // Show all Categories
 exports.showAllCategories = async (req, res) => {
-    try {
-        const categories = await Category.find({}, { name: true, description: true });
+  try {
+      const categories = await Category.find({}, "name description"); // you can also pass projection as a string
 
-        return res.status(200).json({
-            success: true,
-            message: "All categories fetched successfully",
-            data: categories,
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-    }
+      return res.status(200).json({
+          success: true,
+          message: "All categories fetched successfully",
+          data: categories,
+      });
+  } catch (error) {
+      console.error("Error fetching categories:", error); // Good practice to log server errors
+      return res.status(500).json({
+          success: false,
+          message: "Something went wrong while fetching categories",
+          error: error.message, // optionally you can send error.message
+      });
+  }
 };
 exports.categoryPageDetails = async (req, res) => {
     try {

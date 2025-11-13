@@ -185,17 +185,34 @@ const login = async (req, res) => {
             success: true,
             message: "User logged in successfully",
             user,
-            token,  // Send back the token
+            token,  // Send back the token if needed on the client-side
         });
     } catch (error) {
-        // Handle unexpected errors
         return res.status(500).json({
             success: false,
             message: error.message || "User cannot be logged in, please try again",
         });
     }
 };
+const logout = (req, res) => {
+    try {
+        // Clear the JWT token from the client's cookies
+        res.clearCookie("token", {
+            httpOnly: true,  // Ensure the cookie can't be accessed via JS
+            secure: process.env.NODE_ENV === "production",  // Only set 'secure' flag in production
+        });
 
+        return res.status(200).json({
+            success: true,
+            message: "User logged out successfully",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Error logging out",
+        });
+    }
+};
 
 
 

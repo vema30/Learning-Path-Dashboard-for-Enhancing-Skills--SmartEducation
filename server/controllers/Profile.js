@@ -9,8 +9,7 @@ const mongoose = require("mongoose")
 const { convertSecondsToDuration } = require("../utils/secToDuration")
 
 
-
-
+// Express backend route to capture Razorpay payment
 exports.getEnrolledCourses = async (req, res) => {
   try {
     const userId = req.user.id; // Assuming you are using JWT authentication
@@ -48,10 +47,14 @@ exports.getEnrolledCourses = async (req, res) => {
 
       // Calculate progress percentage
       const courseProgressCount = await CourseProgress.findOne({
-        courseID: userDetails.courses[i]._id,
+        courseId: userDetails.courses[i]._id,
         userId: userId,
       });
-
+      console.log("Course ID:", userDetails.courses[i]._id);
+      console.log("Course Progress Count:", courseProgressCount);
+      console.log("Completed Videos:", courseProgressCount?.completedVideos);
+      console.log("Total Subsections:", subsectionLength);
+      
       const completedVideos = courseProgressCount?.completedVideos.length || 0;
 
       // If no subSections, assume 100% progress

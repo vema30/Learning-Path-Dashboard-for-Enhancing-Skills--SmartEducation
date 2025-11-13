@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const User = require("../models/User");
 
-// Authentication Middleware
+// Function to extract token from various sources
 const auth = async (req, res, next) => {
     try {
         // Extract token from Authorization header or cookies (strongly prefer these two sources)

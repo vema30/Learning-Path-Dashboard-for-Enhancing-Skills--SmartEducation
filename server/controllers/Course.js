@@ -5,10 +5,12 @@ const Category = require("../models/Category");
 const User = require("../models/User");
 const path = require("path");
 const fs = require("fs");
+const CourseProgress = require('../models/CourseProgress'); // Adjust path if needed
+const SubSection = require('../models/SubSection'); // Import SubSection model here
 
 const cloudinary=require("../config/cloudinary");
 const { uploadImageToCloudinary } = require("../utils/imageUploader")
-
+const mongoose = require('mongoose');
 
 
 const  createCourse = async (req, res) => {
@@ -168,42 +170,49 @@ const showAllCourses = async (req, res) => {
 
 // Controller to fetch specific course details
 const getCourseDetails = async (req, res) => {
-    try {
-      const courseId = req.params.courseId;
-  
-      const courseDetails = await Course.findOne({ _id: courseId })
-        .populate("instructor", "firstName lastName email")
-        .populate("Category", "name description")
-        .populate("ratingAndReview")
-        .populate({
-          path: "sections",
-          populate: {
-            path: "subSections", // ✅ corrected
-          },
-        })
-        .exec();
-  
-      if (!courseDetails) {
-        return res.status(404).json({
-          success: false,
-          message: `Course not found with ID ${courseId}`,
-        });
-      }
-  
-      return res.status(200).json({
-        success: true,
-        message: "Course details fetched successfully",
-        data: courseDetails,
-      });
-    } catch (e) {
-      console.log("e", e.message);
-      return res.status(500).json({
+  try {
+    const courseId = req.params.courseId;
+
+    // Validate courseId format
+    if (!courseId || !mongoose.Types.ObjectId.isValid(courseId)) {
+      return res.status(400).json({
         success: false,
-        message: "Error fetching course details",
+        message: "Invalid course ID format",
       });
     }
-  };
-  
+
+    const courseDetails = await Course.findOne({ _id: courseId })
+      .populate("instructor", "firstName lastName email")
+      .populate("Category", "name description")
+      .populate("ratingAndReview")
+      .populate({
+        path: "sections",
+        populate: {
+          path: "subSections",
+        },
+      })
+      .exec();
+
+    if (!courseDetails) {
+      return res.status(404).json({
+        success: false,
+        message: `Course not found with ID ${courseId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Course details fetched successfully",
+      data: courseDetails,
+    });
+  } catch (e) {
+    console.error("Error fetching course details:", e); // Log full error
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching course details",
+    });
+  }
+};
 
 const getFullCourseDetails = async (req, res) => {
     try {
@@ -488,9 +497,9 @@ const updateCourseProgress = async (req, res) => {
     await course.save();
 
     return res.status(200).json({
-      message: 'Course progress updated successfully',
-      completedLectures: user.completedLectures,
-      totalCompletedLectures: course.totalCompletedLectures,
+      message: "Lecture marked as completed",
+      completedLectures: user.completedLectures, // Send the updated completed lectures
+      courseProgress: course.totalCompletedLectures // Send the course progress
     });
 
   } catch (error) {
@@ -498,8 +507,53 @@ const updateCourseProgress = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+// Controller for marking lecture as complete
+const markLectureAsComplete = async (req, res) => {
+  const { courseId, subsectionId } = req.body;
 
+  if (!courseId || !subsectionId) {
+    return res.status(400).json({
+      message: "Missing courseId or subsectionId in the request",
+    });
+  }
 
+  try {
+    console.log("Received courseId:", courseId);
+    console.log("Received subsectionId:", subsectionId);
+    console.log("User ID:", req.userId);
+
+    const userId = req.userId;
+    let progress = await CourseProgress.findOne({ userId, courseId });
+
+    if (!progress) {
+      progress = new CourseProgress({
+        userId,
+        courseId,
+        completedVideos: [subsectionId],
+      });
+    } else {
+      if (!progress.completedVideos.includes(subsectionId)) {
+        progress.completedVideos.push(subsectionId);
+      }
+    }
+
+    await progress.save();
+
+    const totalVideos = await SubSection.countDocuments({ courseId });
+    const completedVideos = progress.completedVideos.length;
+    const progressPercentage = (completedVideos / totalVideos) * 100;
+
+    await Course.updateOne({ _id: courseId }, { progressPercentage });
+
+    return res.status(200).json({
+      message: "Lecture marked as complete",
+      progressPercentage,
+    });
+  } catch (error) {
+    console.error("Error marking lecture as complete", error);
+    return res.status(500).json({ message: "Failed to mark lecture as complete" });
+  }
+};
 
 module.exports = {
     createCourse,
@@ -509,5 +563,5 @@ module.exports = {
     editCourse,
     getInstructorCourses,
     deleteCourse,
-    updateCourseProgress
+    updateCourseProgress,markLectureAsComplete
 };
