@@ -42,7 +42,7 @@ function SignupForm() {
     }
     const signupData = { ...formData, accountType }
     dispatch(setSignupData(signupData))
-    //dispatch(sendOtp(formData.email, navigate))
+    dispatch(sendOtp(formData.email, navigate))
     setFormData({ firstName: "", lastName: "", email: "", password: "", confirmPassword: "" })
     setAccountType(ACCOUNT_TYPE.STUDENT)
   }

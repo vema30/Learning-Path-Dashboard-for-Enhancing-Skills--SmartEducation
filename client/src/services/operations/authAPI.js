@@ -21,7 +21,7 @@ export function sendOtp(email, navigate) {
 
     try {
       navigate("/verify-email");
-      return ;
+      return;
       const response = await apiConnector("POST", SENDOTP_API, {
         email,
         checkUserPresent: true,
