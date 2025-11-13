@@ -4,12 +4,12 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import "video-react/dist/video-react.css";
 import { BigPlayButton, Player } from "video-react";
 import VideoSelectionSidebar from './VideoSelectionSidebar';
-
+import { toggleProgressRefresh } from "../../../slices/profileSlice";
 import {
   setCourseSectionData,
   setEntireCourseData,
   setCompletedLectures,
-  setTotalNoOfLectures,
+  setTotalCompletedLectures,
   updateCompletedLectures,
 } from "../../../slices/viewCourseSlice";
 import {
@@ -46,7 +46,7 @@ const VideoDetails = () => {
           dispatch(setCourseSectionData(courseData.sections || []));
           dispatch(setEntireCourseData(courseData));
           dispatch(setCompletedLectures([]));
-          dispatch(setTotalNoOfLectures(totalLectures));
+          dispatch(setTotalCompletedLectures(totalLectures));
         }
       } catch (err) {
         console.error("Error fetching course details:", err);
@@ -58,18 +58,14 @@ const VideoDetails = () => {
   useEffect(() => {
     const loadVideoData = () => {
       if (!courseSectionData.length || !sectionId || !subSectionId) return;
-
       const section = courseSectionData.find((sec) => sec._id === sectionId);
       if (!section) return navigate("/dashboard/enrolled-courses");
-
       const video = section.subSections.find((sub) => sub._id === subSectionId);
       if (!video) return navigate("/dashboard/enrolled-courses");
-
       setVideoData(video);
       setPreviewSource(courseEntireData?.thumbnail || "");
       setVideoEnded(false);
     };
-
     loadVideoData();
   }, [courseSectionData, courseEntireData, sectionId, subSectionId, navigate, location.pathname]);
 
@@ -80,8 +76,23 @@ const VideoDetails = () => {
         { courseId, subsectionId: subSectionId },
         token
       );
+      console.log("API success:", success);
+  
       if (success) {
+        console.log("Dispatching updateCompletedLectures with", subSectionId);
+  
         dispatch(updateCompletedLectures(subSectionId));
+        dispatch(setTotalCompletedLectures(completedLectures.length)); // <-- This line is where the issue occurred
+  
+        try {
+          await markLectureAsComplete({ courseId, subsectionId: subSectionId }, token);
+          navigate("/dashboard/enrolled-courses");
+          dispatch(toggleProgressRefresh());
+
+        } catch (error) {
+          console.error("Failed to mark complete:", error);
+          // Optional: rollback state if needed
+        }
       }
     } catch (error) {
       console.error("Error marking lecture complete:", error);
@@ -89,7 +100,7 @@ const VideoDetails = () => {
       setLoading(false);
     }
   };
-
+  
   const isFirstVideo = () => {
     const sectionIndex = courseSectionData.findIndex((s) => s._id === sectionId);
     const subIndex = courseSectionData[sectionIndex]?.subSections.findIndex((s) => s._id === subSectionId);
@@ -105,19 +116,23 @@ const VideoDetails = () => {
 
   const goToNextVideo = () => {
     const sectionIndex = courseSectionData.findIndex((s) => s._id === sectionId);
-    const currentSubIndex = courseSectionData[sectionIndex].subSections.findIndex((s) => s._id === subSectionId);
+    const currentSubIndex = courseSectionData[sectionIndex]?.subSections.findIndex((s) => s._id === subSectionId);
     const currentSection = courseSectionData[sectionIndex];
-
+  
     if (currentSubIndex < currentSection.subSections.length - 1) {
       const nextSubId = currentSection.subSections[currentSubIndex + 1]._id;
       navigate(`/view-course/${courseId}/section/${sectionId}/sub-section/${nextSubId}`);
     } else if (sectionIndex < courseSectionData.length - 1) {
       const nextSection = courseSectionData[sectionIndex + 1];
-      const nextSubId = nextSection.subSections[0]._id;
-      navigate(`/view-course/${courseId}/section/${nextSection._id}/sub-section/${nextSubId}`);
+      if (nextSection?.subSections?.length > 0) {
+        const nextSubId = nextSection.subSections[0]._id;
+        navigate(`/view-course/${courseId}/section/${nextSection._id}/sub-section/${nextSubId}`);
+      } else {
+        console.warn("Next section has no subsections");
+      }
     }
   };
-
+  
   const goToPrevVideo = () => {
     const sectionIndex = courseSectionData.findIndex((s) => s._id === sectionId);
     const currentSubIndex = courseSectionData[sectionIndex].subSections.findIndex((s) => s._id === subSectionId);
@@ -135,12 +150,10 @@ const VideoDetails = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
       <aside className="w-[22%] min-w-[280px] bg-gray-900 text-white p-4 border-r border-gray-700 overflow-y-auto">
         <VideoSelectionSidebar />
       </aside>
 
-      {/* Video and Content */}
       <main className="flex-1 p-6">
         <div className="flex flex-col gap-6">
           {!videoData ? (
@@ -186,19 +199,17 @@ const VideoDetails = () => {
             </div>
           )}
 
-          {/* Title and Description */}
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">{videoData?.title}</h2>
             <p className="mt-2 text-gray-600 leading-relaxed">{videoData?.description}</p>
           </div>
 
-          {/* Navigation Buttons */}
           <div className="flex justify-end gap-6 mt-8">
             {!isFirstVideo() && (
               <button
                 disabled={loading}
                 onClick={goToPrevVideo}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition bg-caribbeangreen-500"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium"
               >
                 Previous
               </button>
@@ -207,7 +218,7 @@ const VideoDetails = () => {
               <button
                 disabled={loading}
                 onClick={goToNextVideo}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition  bg-caribbeangreen-500"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium"
               >
                 Next
               </button>

@@ -6,14 +6,10 @@ import { configureStore } from "@reduxjs/toolkit"; // ✅ Import configureStore
 import App from "./App";
 import rootReducer from "./reducer/index"; // ✅ Ensure correct path
 import "./index.css";
-
 import { Toaster } from "react-hot-toast";
+import store from "./components/store";
 
 // Create Redux store
-const store = configureStore({
-  reducer: rootReducer,
-  
-});
 
 // Create React root
 const root = ReactDOM.createRoot(document.getElementById("root"));

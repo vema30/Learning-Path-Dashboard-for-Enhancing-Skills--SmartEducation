@@ -29,7 +29,7 @@ const ContactUs = () => {
     try {
       // Send form data to the backend API using Axios
       const response = await axios.post(
-        "http://localhost:4000/api/v1/reach/contact",
+        "https://learning-path-dashboard-for-enhancing-7n8z.onrender.com/api/v1/reach/contact",
         formData,
         {
           headers: {

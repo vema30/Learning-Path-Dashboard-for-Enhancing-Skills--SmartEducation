@@ -1,79 +1,106 @@
-import React, { useEffect, useState } from "react"
-import { BiInfoCircle } from "react-icons/bi"
-import { HiOutlineGlobeAlt } from "react-icons/hi"
-import { ReactMarkdown } from "react-markdown/lib/react-markdown"
-import { useDispatch, useSelector } from "react-redux"
-import { useNavigate, useParams } from "react-router-dom"
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { BiInfoCircle } from "react-icons/bi";
+import { HiOutlineGlobeAlt } from "react-icons/hi";
+import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+import { setPaymentLoading } from "../../slices/courseSlice";
 
-import ConfirmationModal from "../../components/common/ConfirmationModal"
-import Footer from "../../components/common/Footer"
-import RatingStars from "../../components/common/RatingStars"
-import CourseAccordionBar from "../../components/core/Course/CourseAccordionBar"
-import CourseDetailsCard from "../../components/core/Course/CourseDetailsCard"
+import ConfirmationModal from "../../components/common/ConfirmationModal";
+import Footer from "../../components/common/Footer";
+import RatingStars from "../../components/common/RatingStars";
+import CourseAccordionBar from "../../components/core/Course/CourseAccordionBar";
+import CourseDetailsCard from "../../components/core/Course/CourseDetailsCard";
 
-import { formatDate } from "../../services/formatDate"
-import { fetchCourseDetails } from "../../services/operations/courseDetailsAPI"
-import { BuyCourse } from "../../services/operations/studentFeaturesAPI"
-import { getUserDetails } from "../../services/operations/profileAPI"
-import GetAvgRating from "../../utils/avgRating"
+import { fetchCourseDetails } from "../../services/operations/courseDetailsAPI";
+import { BuyCourse } from "../../services/operations/studentFeaturesAPI";
+import { getUserDetails } from "../../services/operations/profileAPI";
+
+import { formatDate } from "../../services/formatDate";
+import GetAvgRating from "../../utils/avgRating";
 
 function CourseDetails() {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const { courseId } = useParams()
+  const { courseId } = useParams();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const { user } = useSelector((state) => state.profile)
-  const { token } = useSelector((state) => state.auth)
-  const { loading } = useSelector((state) => state.profile)
-  const { paymentLoading } = useSelector((state) => state.course)
+  const { user } = useSelector((state) => state.profile);
+  const { token } = useSelector((state) => state.auth);
+  const { paymentLoading } = useSelector((state) => state.course);
 
-  const [courseData, setCourseData] = useState(null)
-  const [instructorImage, setInstructorImage] = useState(null)
-  const [confirmationModal, setConfirmationModal] = useState(null)
-  const [avgReviewCount, setAvgReviewCount] = useState(0)
-  const [totalNoOfLectures, setTotalNoOfLectures] = useState(0)
-  const [isActive, setIsActive] = useState([])
+  const [loading, setLoading] = useState(true);
+  const [courseData, setCourseData] = useState(null);
+  const [instructorImage, setInstructorImage] = useState(null);
+  const [confirmationModal, setConfirmationModal] = useState(null);
+  const [avgReviewCount, setAvgReviewCount] = useState(0);
+  const [totalNoOfLectures, setTotalNoOfLectures] = useState(0);
+  const [isActive, setIsActive] = useState([]);
 
+  // Fetch course details
   useEffect(() => {
-    const getCourseDetails = async () => {
-      try {
-        const res = await fetchCourseDetails(courseId)
-        const data = res.data
+    const token = JSON.parse(localStorage.getItem("token"));
 
-        setCourseData(data)
-        setAvgReviewCount(GetAvgRating(data.ratingAndReview || []))
+    const getCourseDetails = async () => {
+      setLoading(true);
+      try {
+        const res = await fetchCourseDetails(courseId,token);
+if (!res.success) {
+  throw new Error(res.message);
+}
+
+        const data = res.data;
+        setCourseData(data);
+        setAvgReviewCount(GetAvgRating(data.ratingAndReview || []));
 
         const totalLectures = data.sections?.reduce(
           (acc, sec) => acc + (sec.subSection?.length || 0),
           0
-        )
-        setTotalNoOfLectures(totalLectures)
+        );
+        setTotalNoOfLectures(totalLectures);
       } catch (err) {
-        console.error("Error fetching course:", err)
+        console.error("Error fetching course:", err);
+        toast.error("Failed to load course details.");
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    getCourseDetails()
-  }, [courseId])
+    getCourseDetails();
+  }, [courseId]);
 
+  // Fetch instructor image
   useEffect(() => {
     const fetchInstructorImage = async () => {
       if (courseData?.instructor?._id) {
         try {
-          const res = await getUserDetails(courseData.instructor._id)
-          setInstructorImage(res?.data?.image)
+          const res = await getUserDetails(courseData.instructor._id);
+          setInstructorImage(res?.data?.image);
         } catch (error) {
-          console.error("Failed to fetch instructor image", error)
+          console.error("Failed to fetch instructor image:", error);
         }
       }
-    }
+    };
 
-    fetchInstructorImage()
-  }, [courseData])
+    fetchInstructorImage();
+  }, [courseData]);
 
-  const handleBuyCourse = () => {
+  // Handle Buy Course
+  const handleBuyCourse = async () => {
+    if (loading || paymentLoading) return;
+
     if (token) {
-      BuyCourse(token, [courseId], user, navigate, dispatch)
+      try {
+        dispatch(setPaymentLoading(true)); // <-- Correct way!
+        await BuyCourse(token, [courseId], user, navigate, dispatch);
+        // Navigate to the payment page
+        navigate(`/payments/${courseId}`);
+      } catch (error) {
+        console.error("Error in BuyCourse:", error);
+        toast.error("Error processing the payment. Please try again.");
+      } finally {
+        dispatch(setPaymentLoading(false)); // <-- Correct way!
+      }
     } else {
       setConfirmationModal({
         text1: "You are not logged in!",
@@ -82,22 +109,22 @@ function CourseDetails() {
         btn2Text: "Cancel",
         btn1Handler: () => navigate("/login"),
         btn2Handler: () => setConfirmationModal(null),
-      })
+      });
     }
-  }
+  };
 
   const handleActive = (id) => {
     setIsActive((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    )
-  }
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
   if (loading || !courseData) {
     return (
       <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
         <div className="spinner"></div>
       </div>
-    )
+    );
   }
 
   const {
@@ -111,15 +138,15 @@ function CourseDetails() {
     instructor,
     studentsEnrolled = [],
     createdAt,
-  } = courseData
+  } = courseData;
 
   return (
     <>
-      {/* HEADER + COURSE CARD */}
+      {/* Header + Course Card Section */}
       <div className="w-full bg-richblack-800">
         <div className="mx-auto px-4 lg:w-[1260px]">
-          <div className="flex flex-col-reverse gap-10 py-8 lg:flex-row lg:items-start">
-            {/* LEFT: Course Info */}
+          <div className="flex flex-col-reverse gap-10 py-8 lg:flex-row">
+            {/* Left: Course Info */}
             <div className="flex-1">
               <div className="relative block max-h-[30rem] lg:hidden">
                 <img src={thumbnail} alt="course thumbnail" className="w-full aspect-auto" />
@@ -132,8 +159,8 @@ function CourseDetails() {
                 <div className="flex flex-wrap items-center gap-2 text-md">
                   <span className="text-yellow-25">{avgReviewCount}</span>
                   <RatingStars Review_Count={avgReviewCount} Star_Size={24} />
-                  <span>{`(${ratingAndReview.length} reviews)`}</span>
-                  <span>{`${studentsEnrolled.length} students enrolled`}</span>
+                  <span>({ratingAndReview.length} reviews)</span>
+                  <span>{studentsEnrolled.length} students enrolled</span>
                 </div>
 
                 <p>Created by {`${instructor.firstName} ${instructor.lastName}`}</p>
@@ -151,12 +178,18 @@ function CourseDetails() {
               {/* Mobile Buttons */}
               <div className="flex w-full flex-col gap-4 border-y py-4 lg:hidden">
                 <p className="pb-4 text-3xl font-semibold">Rs. {price}</p>
-                <button className="yellowButton" onClick={handleBuyCourse}>Buy Now</button>
+                <button
+                  className="yellowButton"
+                  onClick={handleBuyCourse}
+                  disabled={paymentLoading}
+                >
+                  {paymentLoading ? "Processing..." : "Buy Now"}
+                </button>
                 <button className="blackButton">Add to Cart</button>
               </div>
             </div>
 
-            {/* RIGHT: CourseDetailsCard */}
+            {/* Right: Course Details Card */}
             <div className="hidden lg:block w-full max-w-[400px]">
               <CourseDetailsCard
                 course={courseData}
@@ -168,7 +201,7 @@ function CourseDetails() {
         </div>
       </div>
 
-      {/* COURSE BODY */}
+      {/* Course Content Section */}
       <div className="mx-auto px-4 text-richblack-5 lg:w-[1260px]">
         <div className="mx-auto xl:max-w-[810px]">
           {/* What you'll learn */}
@@ -229,9 +262,10 @@ function CourseDetails() {
 
       <Footer />
 
+      {/* Confirmation Modal */}
       {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </>
-  )
+  );
 }
 
-export default CourseDetails
+export default CourseDetails;

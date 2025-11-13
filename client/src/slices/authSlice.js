@@ -1,19 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+// Utility function to get token from localStorage
 const getTokenFromLocalStorage = () => {
-  try {
-    const token = localStorage.getItem("token");
-    return token ? JSON.parse(token) : null;
-  } catch (error) {
-    console.error("Failed to parse token from localStorage:", error);
-    return null;
-  }
+  const token = localStorage.getItem("token");
+  return token ? token : null; // Return as a string
 };
 
 const initialState = {
   signupData: null,
   loading: false,
-  token: getTokenFromLocalStorage(),
+  token: getTokenFromLocalStorage(), // Get token on initial state
 };
 
 const authSlice = createSlice({
@@ -28,7 +24,8 @@ const authSlice = createSlice({
     },
     setToken(state, action) {
       state.token = action.payload;
-      localStorage.setItem("token", JSON.stringify(action.payload)); // Persist token on state update
+      localStorage.setItem("token", action.payload); // Persist token on state update
+      console.log("Token set:", action.payload); // Debug log
     },
   },
 });

@@ -10,7 +10,7 @@ import { apiConnector } from "../../services/apiconnector";
 import { categories } from "../../services/apis";
 import { ACCOUNT_TYPE } from "../../utils/constants";
 import ProfileDropdown from "../core/Auth/ProfileDropDown";
- 
+
 export function Navbar() {
   const { token } = useSelector((state) => state.auth);
  // console.log("token",token );
@@ -22,21 +22,26 @@ export function Navbar() {
   const [subLinks, setSubLinks] = useState([]);
   const [loading, setLoading] = useState(false);
      // console.log("sublinks",subLinks);
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await apiConnector("GET", categories.CATEGORIES_API);
-       // console.log("API Response:", res);
-        setSubLinks(res.data.data);
-      //  console.log("subLinks:", res.data.data); // Log the subLinks data
-      } catch (error) {
-        console.log("Could not fetch Categories.", error);
-      }
-      setLoading(false);
-    })();
-  }, []);
-
+     useEffect(() => {
+      (async () => {
+        setLoading(true);
+        try {
+          const token = localStorage.getItem("token");
+          console.log("Token for categories:", token);
+    
+          const res = await apiConnector("GET", categories.CATEGORIES_API, null, {
+            Authorization: `Bearer ${token}`,
+          });
+    
+          setSubLinks(res.data.data);
+          // console.log("subLinks:", res.data.data);
+        } catch (error) {
+          console.log("Could not fetch Categories.", error);
+        }
+        setLoading(false);
+      })();
+    }, []);
+    
   const matchRoute = (route) => {
     return matchPath({ path: route }, location.pathname);
   };

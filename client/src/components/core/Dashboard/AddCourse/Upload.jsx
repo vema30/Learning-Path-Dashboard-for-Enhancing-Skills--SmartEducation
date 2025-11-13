@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import { FiUploadCloud } from "react-icons/fi"
 import { useSelector } from "react-redux"
@@ -18,17 +18,16 @@ export default function Upload({
   const { course } = useSelector((state) => state.course)
   const [selectedFile, setSelectedFile] = useState(null)
   const [previewSource, setPreviewSource] = useState(viewData || editData || "")
-  const inputRef = useRef(null)
 
   const onDrop = (acceptedFiles) => {
     const file = acceptedFiles[0]
     if (file) {
       if (video && !file.type.startsWith("video")) {
-        alert("Please upload a valid video file (MP4).")
+        alert("Please upload a valid video file (MP4, etc.)")
         return
       }
       if (!video && !file.type.startsWith("image")) {
-        alert("Please upload a valid image file (JPEG, PNG).")
+        alert("Please upload a valid image file (JPEG, PNG, etc.)")
         return
       }
       previewFile(file)
@@ -36,7 +35,12 @@ export default function Upload({
     }
   }
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive,
+    inputRef,
+  } = useDropzone({
     accept: video
       ? {
           "video/mp4": [".mp4"],
@@ -53,39 +57,52 @@ export default function Upload({
           "image/gif": [".gif"],
         },
     onDrop,
+    multiple: false,
   })
-  
+
   const previewFile = (file) => {
     const reader = new FileReader()
     reader.readAsDataURL(file)
-    reader.onloadend = () => {
-      setPreviewSource(reader.result)
-    }
-    reader.onerror = () => {
-      alert("There was an error reading the file")
-    }
+    reader.onloadend = () => setPreviewSource(reader.result)
+    reader.onerror = () => alert("There was an error reading the file")
   }
 
-  // Register the field with React Hook Form
+  // Register the field with react-hook-form
   useEffect(() => {
     register(name, { required: true })
   }, [register, name])
 
-  // Set the file value in React Hook Form whenever selectedFile changes
+  // Set the file value when selectedFile changes
   useEffect(() => {
     setValue(name, selectedFile)
-  }, [selectedFile, setValue, name])
+  }, [selectedFile, name, setValue])
 
   return (
     <div className="flex flex-col space-y-2">
       <label className="text-sm text-richblack-5" htmlFor={name}>
         {label} {!viewData && <sup className="text-pink-200">*</sup>}
       </label>
+
       <div
+        {...getRootProps()}
         className={`${
           isDragActive ? "bg-richblack-600" : "bg-richblack-700"
         } flex min-h-[250px] cursor-pointer items-center justify-center rounded-md border-2 border-dotted border-richblack-500`}
       >
+        <input
+          {...getInputProps({
+            name,
+            ref: inputRef,
+            onChange: (e) => {
+              const file = e.target.files[0]
+              if (file) {
+                previewFile(file)
+                setSelectedFile(file)
+              }
+            },
+          })}
+        />
+
         {previewSource ? (
           <div className="flex w-full flex-col p-6">
             {!video ? (
@@ -112,13 +129,12 @@ export default function Upload({
             )}
           </div>
         ) : (
-          <div className="flex w-full flex-col items-center p-6" {...getRootProps()}>
-            <input {...getInputProps()} ref={inputRef} id={name} />
+          <div className="flex w-full flex-col items-center p-6">
             <div className="grid aspect-square w-14 place-items-center rounded-full bg-pure-greys-800">
               <FiUploadCloud className="text-2xl text-yellow-50" />
             </div>
             <p className="mt-2 max-w-[200px] text-center text-sm text-richblack-200">
-              Drag and drop an {!video ? "image" : "video"}, or click to{" "}
+              Drag and drop a {!video ? "image" : "video"}, or click to{" "}
               <span className="font-semibold text-yellow-50">Browse</span> a file
             </p>
             <ul className="mt-10 flex list-disc justify-between space-x-12 text-center text-xs text-richblack-200">
@@ -128,6 +144,7 @@ export default function Upload({
           </div>
         )}
       </div>
+
       {errors[name] && (
         <span className="ml-2 text-xs tracking-wide text-pink-200">
           {label} is required

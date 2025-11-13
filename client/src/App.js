@@ -30,6 +30,18 @@ import { ACCOUNT_TYPE } from "./utils/constants"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom";
 import   Recommendation from './helper/Recommendation'
+import EditCourse from "./components/core/Dashboard/EditCourse";  // Adjust path if necessary
+import PaymentPage from "./components/pages/paymentpage";
+import BlogPage from "./components/pages/BlogPage";
+import BlogDetails from "./components/pages/BlogDetails";
+import CreateBlog from "./components/pages/CreateBlog";
+import EditBlogPage from "./components/pages/EditBlogPage";
+import QuizDetails from "./components/pages/tests/QuizDetails";
+import CreateTests from "./components/pages/tests/CreateTests";
+import MyTests from "./components/pages/tests/MyTests";
+import TestResult from "./components/pages/tests/TestResult";
+//import TestDetails from "./components/pages/TestDetails";
+import CreateCategory1 from "./components/pages/tests/createCategory";
 const App = () => { 
    const { user } = useSelector((state) => state.profile)
    console.log("hi",user?.accountType, ACCOUNT_TYPE.STUDENT);
@@ -41,7 +53,7 @@ const App = () => {
       <Navbar />
     
       
-     { <Recommendation/>}
+   {/* <Recommendation/>*/}
      
      
 
@@ -56,6 +68,18 @@ const App = () => {
         <Route path="/update-password/:token" element={<ResetPassword />} />
         <Route path="/catalog/:catalogName" element={<Catalog/>}/>
         <Route path="/courses/:courseId" element={<CourseDetails />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blogs" element={<BlogPage />} />
+        <Route path="/blogs/:id" element={<BlogDetails />} />
+        <Route path="/create-blog" element={<CreateBlog />} />
+        <Route path="/edit-blog/:id" element={<EditBlogPage />} />
+        <Route path="/payments/:courseId" element={<PaymentPage />} />
+        <Route path="/tests" element={<MyTests />} />
+        <Route path="/quiz/:id" element={<QuizDetails />} />
+        <Route path="/test-result" element={<TestResult />} />
+        <Route path="/create-test" element={<CreateTests />} />
+        <Route path="/create-category" element={<CreateCategory1 />} />
+
         {user?.accountType === ACCOUNT_TYPE.STUDENT && (
             <>
               <Route
@@ -67,7 +91,7 @@ const App = () => {
 
         {/* Private Dashboard Route */}
         <Route
-          path="/dashboard/*"
+          path="/dashboard/"
           element={
             <PrivateRoute>
               <Dashboard />
@@ -77,11 +101,13 @@ const App = () => {
           <Route path="my-profile" element={<MyProfile />} />
           <Route path="cart" element={<Cart />} />
           <Route path="settings" element={<Settings />} />
-          
+
           <Route path="create-category" element={<CreateCategory/>} />
           <Route path="my-courses" element={<MyCourses/>} />
           <Route path="add-course" element={<AddCourse />} />
           <Route path="enrolled-courses" element={<EnrolledCourses />} />
+          <Route path="edit-course/:courseId" element={<EditCourse />} />
+
         </Route>
       </Routes>
        
