@@ -27,14 +27,25 @@ app.use(express.json());
 app.use(cookieParser());
 
 // CORS configuration for local development and production
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000", // Default to localhost during development
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// app.use(
+//   cors({
+//     origin: process.env.CLIENT_URL || "http://localhost:3000", // Default to localhost during development
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://learning-path-dashboard-for-enhanci.vercel.app"
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+
 
 // Middleware for file uploads
 app.use(
