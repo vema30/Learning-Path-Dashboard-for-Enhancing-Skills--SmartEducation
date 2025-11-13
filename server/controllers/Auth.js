@@ -78,64 +78,125 @@ const sendOTP = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message || "Error in sending OTP" });
     }
 };
+const signUp = async (req, res) => {
+  try {
+    const { email, password, confirmPassword, firstName, lastName, accountType, otp } = req.body;
+
+    // Check required fields
+    if (!email || !password || !confirmPassword || !firstName || !lastName || !accountType || !otp) {
+      return res.status(403).json({ success: false, message: "All fields including OTP are required" });
+    }
+
+    // Check password match
+    if (password !== confirmPassword) {
+      return res.status(400).json({ success: false, message: "Passwords do not match" });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: "User already exists" });
+    }
+
+    // ✅ Verify OTP
+    const recentOtp = await Otp.findOne({ email }).sort({ createdAt: -1 }).limit(1);
+    if (!recentOtp) {
+      return res.status(400).json({ success: false, message: "OTP not found. Please request a new one." });
+    }
+
+    if (recentOtp.otp !== otp) {
+      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    // ✅ (Optional) Delete OTP after use
+    await Otp.deleteMany({ email });
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create Profile
+    const profileDetails = await Profile.create({
+      gender: "",
+      dateOfBirth: undefined,
+      about: "",
+      contactNumber: ""
+    });
+
+    // Create User
+    const newUser = await User.create({
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
+      accountType,
+      additionalDetails: profileDetails._id,
+      image: `https://api.dicebear.com/5.x/initials/svg?seed=${encodeURIComponent(firstName + " " + lastName)}`
+    });
+
+    return res.status(201).json({ success: true, message: "User registered successfully", user: newUser });
+  } catch (error) {
+    console.error("Error in signUp:", error);
+    return res.status(500).json({ success: false, message: "User cannot be registered, please try again" });
+  }
+};
 
 // Sign Up
-const signUp = async (req, res) => {
-    try {
-        const { email, password, confirmPassword, firstName, lastName, accountType } = req.body;
-  //add otp , otpin to the body
-        // Check all required fields             
-        if (!email || !password || !confirmPassword || !firstName || !lastName || !accountType ) { //|| !otp
-            return res.status(403).json({ success: false, message: "All fields are required" });
-        }
+// const signUp = async (req, res) => {
+//     try {
+//         const { email, password, confirmPassword, firstName, lastName, accountType } = req.body;
+//   //add otp , otpin to the body
+//         // Check all required fields             
+//         if (!email || !password || !confirmPassword || !firstName || !lastName || !accountType ) { //|| !otp
+//             return res.status(403).json({ success: false, message: "All fields are required" });
+//         }
 
-        // Check password match
-        if (password !== confirmPassword) {
-            return res.status(400).json({ success: false, message: "Passwords do not match" });
-        }
+//         // Check password match
+//         if (password !== confirmPassword) {
+//             return res.status(400).json({ success: false, message: "Passwords do not match" });
+//         }
 
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ success: false, message: "User already exists" });
-        }
-    //check wether otp is valid or not write logic here
-        // Hash Password
-        const hashedPassword = await bcrypt.hash(password, 10);
+//         // Check if user already exists
+//         const existingUser = await User.findOne({ email });
+//         if (existingUser) {
+//             return res.status(400).json({ success: false, message: "User already exists" });
+//         }
+//     //check wether otp is valid or not write logic here
+//         // Hash Password
+//         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create Profile with Error Handling
-        const profileDetails = await Profile.create({
-            gender: "",
-            dateOfBirth: undefined,
-            about: " ",
-            contactNumber: ""
-        });
+//         // Create Profile with Error Handling
+//         const profileDetails = await Profile.create({
+//             gender: "",
+//             dateOfBirth: undefined,
+//             about: " ",
+//             contactNumber: ""
+//         });
 
-        if (!profileDetails) {
-            return res.status(500).json({ success: false, message: "Failed to create profile" });
-        }
+//         if (!profileDetails) {
+//             return res.status(500).json({ success: false, message: "Failed to create profile" });
+//         }
 
-        // Create User with profile reference
-        const newUser = await User.create({
-            email,
-            password: hashedPassword,
-            firstName,
-            lastName,
-            accountType,
-            additionalDetails: profileDetails._id,
-            image: `https://api.dicebear.com/5.x/initials/svg?seed=${encodeURIComponent(firstName + " " + lastName)}`
-        });
+//         // Create User with profile reference
+//         const newUser = await User.create({
+//             email,
+//             password: hashedPassword,
+//             firstName,
+//             lastName,
+//             accountType,
+//             additionalDetails: profileDetails._id,
+//             image: `https://api.dicebear.com/5.x/initials/svg?seed=${encodeURIComponent(firstName + " " + lastName)}`
+//         });
 
-        if (!newUser) {
-            return res.status(500).json({ success: false, message: "Failed to create user" });
-        }
+//         if (!newUser) {
+//             return res.status(500).json({ success: false, message: "Failed to create user" });
+//         }
 
-        return res.status(201).json({ success: true, message: "User registered successfully", user: newUser });
-    } catch (error) {
-        console.error("Error in signUp:", error);
-        return res.status(500).json({ success: false, message: "User cannot be registered, please try again" });
-    }
-};
+//         return res.status(201).json({ success: true, message: "User registered successfully", user: newUser });
+//     } catch (error) {
+//         console.error("Error in signUp:", error);
+//         return res.status(500).json({ success: false, message: "User cannot be registered, please try again" });
+//     }
+// };
 
 
 
