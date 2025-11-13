@@ -14,7 +14,7 @@ import {
 import { resetCart } from "../../slices/cartSlice";
 import { studentEndpoints } from "../apis";
 import rzpLogo from "../../assets/Logo/rzp_logo.png";
-const API_URL = "http://localhost:4000/api/v1/payments"; // Adjust API URL as per your backend
+const API_URL = "https://learning-path-dashboard-for-enhancing-7n8z.onrender.com/api/v1/payments"; // Adjust API URL as per your backend
 
 // Utility: load Razorpay script with retry
 const loadScript = (src) => {

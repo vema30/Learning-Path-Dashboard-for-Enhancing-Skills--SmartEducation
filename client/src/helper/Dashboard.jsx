@@ -7,7 +7,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Fetch the dashboard data from Flask
-    axios.get("http://localhost:5000/api/dashboard")
+    axios.get("https://learning-path-dashboard-for-enhancing-7n8z.onrender.com/api/dashboard")
       .then((res) => {
         setData(res.data);
       });

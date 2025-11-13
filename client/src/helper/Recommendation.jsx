@@ -11,7 +11,7 @@ const Recommendation = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      const response = await axios.post("http://127.0.0.1:5000/api/recommend", {
+      const response = await axios.post("https://learning-path-dashboard-for-enhancing-7n8z.onrender.com/api/recommend", {
         course: courseName,
       })
       setCourseMap(response.data.coursemap)

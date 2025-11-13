@@ -65,7 +65,7 @@ export function updateProfile(token, formData) {
 
       // Use full URL with environment variable for the base URL
       const response = await axios.put(
-        "http://localhost:4000/api/v1/profile/updateProfile",
+        "https://learning-path-dashboard-for-enhancing-7n8z.onrender.com/api/v1/profile/updateProfile",
         formData,
         {
           headers: {

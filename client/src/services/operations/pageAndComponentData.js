@@ -9,7 +9,7 @@ export const getCatalogPageData = async (categoryId) => {
   try {
     const response = await apiConnector(
       "POST",
-      'http://localhost:4000/api/v1/course/categories1',
+      'https://learning-path-dashboard-for-enhancing-7n8z.onrender.com/api/v1/course/categories1',
       { categoryId }
     );
 

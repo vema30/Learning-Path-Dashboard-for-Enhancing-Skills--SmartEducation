@@ -23,7 +23,7 @@ const {
   LECTURE_COMPLETION_API,
 } = courseEndpoints;
 
-const baseURL = "http://localhost:4000/api/v1";
+const baseURL = "https://learning-path-dashboard-for-enhancing-7n8z.onrender.com/api/v1";
 
 // Fetch all courses
 export const getAllCourses = async () => {
@@ -45,7 +45,7 @@ export const getAllCourses = async () => {
 
 export const fetchCourseDetails = async (courseId, token) => {
   try {
-    const response = await axios.get(`http://localhost:4000/api/v1/course/${courseId}`, {
+    const response = await axios.get(`https://learning-path-dashboard-for-enhancing-7n8z.onrender.com/api/v1/course/${courseId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
