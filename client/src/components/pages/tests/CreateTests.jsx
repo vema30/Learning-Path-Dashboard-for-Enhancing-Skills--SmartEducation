@@ -41,7 +41,7 @@ const CreateTests = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await axios.post('http://localhost:4000/api/quizzes', {
+      await axios.post('https://learning-path-dashboard-for-enhancing-7n8z.onrender.com/api/quizzes', {
         title,
         category,
         image,

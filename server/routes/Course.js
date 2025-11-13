@@ -132,7 +132,7 @@ router.post("/mark-lecture-complete", auth, isStudent, markLectureAsComplete);
 // ********************************************************************************************************
 //                                      Category Routes (Only by Admin)
 // ********************************************************************************************************
-router.post("/categories", auth, isAdmin, createCategory);
+router.post("/categories", createCategory);
 router.get("/categories", showAllCategories); 
 router.post("/categories1", categoryPageDetails); 
 

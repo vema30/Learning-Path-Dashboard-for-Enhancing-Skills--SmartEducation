@@ -8,7 +8,7 @@ const MyTests = () => {
 
   useEffect(() => {
     // Set the full backend URL including localhost and port
-    axios.get('http://localhost:4000/api/quizzes')  // Ensure this matches your backend endpoint
+    axios.get('https://learning-path-dashboard-for-enhancing-7n8z.onrender.com/api/quizzes')  // Ensure this matches your backend endpoint
       .then(res => setQuizzes(res.data))
       .catch(err => console.error(err))
   }, [])

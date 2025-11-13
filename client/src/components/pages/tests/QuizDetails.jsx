@@ -45,7 +45,7 @@ const QuizDetails = () => {
       return;
     }
 
-    axios.post('http://localhost:4000/api/tests/submit', {
+    axios.post('https://learning-path-dashboard-for-enhancing-7n8z.onrender.com/api/tests/submit', {
       userId: user._id, // Assuming the user object has _id
       quizId: id,
       answers,
