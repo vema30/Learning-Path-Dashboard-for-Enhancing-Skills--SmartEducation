@@ -134,7 +134,7 @@ router.post("/mark-lecture-complete", auth, isStudent, markLectureAsComplete);
 // ********************************************************************************************************
 router.post("/categories", auth, isAdmin, createCategory);
 router.get("/categories",auth, showAllCategories); 
-router.post("/categories1",auth, categoryPageDetails); 
+router.post("/categories1", categoryPageDetails); 
 
 router.get("/categories/:categoryId",auth, categoryPageDetails);
 router.get("/courses",auth, showAllCourses);
